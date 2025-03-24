@@ -1,0 +1,279 @@
+drop database driveflowdb;
+
+CREATE DATABASE driveflowdb;
+
+USE driveflowdb;
+
+-- Role Table
+CREATE TABLE roles (
+    role_id VARCHAR(20) PRIMARY KEY,
+    description TEXT
+);
+
+-- Users Table
+CREATE TABLE users (
+    user_id VARCHAR(20) PRIMARY KEY, 
+    role_id VARCHAR(20) NOT NULL,         
+    ic VARCHAR(20) NOT NULL UNIQUE,      
+    name VARCHAR(100) NOT NULL,          
+    username VARCHAR(50) NOT NULL UNIQUE, 
+    password VARCHAR(255) NOT NULL,      
+    email VARCHAR(100) NOT NULL UNIQUE,  
+    address TEXT,                        
+    phone VARCHAR(20),                   
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP 
+);
+
+-- Student Table
+CREATE TABLE students (
+    student_id VARCHAR(20) PRIMARY KEY,
+    user_id VARCHAR(20) NOT NULL UNIQUE,
+    dob DATE NOT NULL,
+    bank_number VARCHAR(30),
+    bank_name VARCHAR(50),
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+-- Instructor Table
+CREATE TABLE instructors (
+    instructor_id VARCHAR(20) PRIMARY KEY,
+    user_id VARCHAR(20) NOT NULL UNIQUE,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+-- Administrator Table
+CREATE TABLE administrators (
+    administrator_id VARCHAR(20) PRIMARY KEY,
+    user_id VARCHAR(20) NOT NULL UNIQUE,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+-- Licenses Table
+CREATE TABLE licenses (
+    license_id VARCHAR(10) PRIMARY KEY,
+    license_name VARCHAR(50) NOT NULL,
+    license_type VARCHAR(50),
+    description TEXT,
+    license_fee DECIMAL(10, 2) NOT NULL
+);
+
+-- Lessons Table
+CREATE TABLE lessons (
+    lesson_id VARCHAR(10) PRIMARY KEY,
+    lesson_name VARCHAR(50) NOT NULL,
+    lesson_fee DECIMAL(10, 2) NOT NULL
+);
+
+-- Test Table
+CREATE TABLE tests (
+    test_id VARCHAR(20) PRIMARY KEY,
+    test_name VARCHAR(50) NOT NULL,
+    test_fee DECIMAL(10, 2) NOT NULL
+);
+
+-- StudentLicenses Table
+CREATE TABLE student_licenses (
+    student_license_id VARCHAR(20) PRIMARY KEY,
+    lesson_id VARCHAR(10) NOT NULL,
+    student_id VARCHAR(20) NOT NULL,
+    license_id VARCHAR(10) NOT NULL,  
+    progress INT DEFAULT 0,
+    FOREIGN KEY (lesson_id) REFERENCES lessons(lesson_id) ON DELETE CASCADE,
+    FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE,
+    FOREIGN KEY (license_id) REFERENCES licenses(license_id) ON DELETE CASCADE
+);
+
+-- StudentLessons Table
+CREATE TABLE student_lessons (
+    student_lesson_id VARCHAR(20) PRIMARY KEY, 
+    student_license_id VARCHAR(20) NOT NULL,
+    instructor_id VARCHAR(20),
+    student_lesson_name VARCHAR(50),
+    date DATE, 
+    start_time TIME, 
+    end_time TIME, 
+    status ENUM('Completed', 'Pending', 'Ineligible') DEFAULT 'Ineligible',
+    schedule_status ENUM('Assigned', 'Unassigned') DEFAULT 'Unassigned', 
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_license_id) REFERENCES student_licenses(student_license_id) ON DELETE CASCADE,
+    FOREIGN KEY (instructor_id) REFERENCES instructors(instructor_id) ON DELETE CASCADE
+);
+
+-- StudentTest Table
+CREATE TABLE student_tests (
+    student_test_id VARCHAR(20) PRIMARY KEY,
+    student_license_id VARCHAR(20) NOT NULL,
+    test_id VARCHAR(20) NOT NULL,
+    status ENUM('Passed', 'Failed', 'Pending', 'Ineligible') DEFAULT 'Ineligible',
+    schedule_status ENUM('Assigned', 'Unassigned') DEFAULT 'Unassigned',
+    score DECIMAL(5, 2),
+    FOREIGN KEY (test_id) REFERENCES tests(test_id) ON DELETE CASCADE,
+    FOREIGN KEY (student_license_id) REFERENCES student_licenses(student_license_id) ON DELETE CASCADE
+);
+
+-- TestSession Table 
+CREATE TABLE test_sessions (
+    test_session_id VARCHAR(20) PRIMARY KEY,
+    test_id VARCHAR(20) NOT NULL,
+    instructor_id VARCHAR(20),
+    test_date DATE NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    capacity_students INT DEFAULT 10,
+    status ENUM('Scheduled', 'Completed', 'Cancelled') DEFAULT 'Scheduled',
+    FOREIGN KEY (test_id) REFERENCES tests(test_id) ON DELETE CASCADE,
+    FOREIGN KEY (instructor_id) REFERENCES instructors(instructor_id) ON DELETE SET NULL
+);
+
+-- StudentTestSessions Table
+CREATE TABLE student_test_sessions (
+    student_test_session_id VARCHAR(20) PRIMARY KEY,
+    student_test_id VARCHAR(20) NOT NULL,
+    test_session_id VARCHAR(20) NOT NULL,
+    FOREIGN KEY (student_test_id) REFERENCES student_tests(student_test_id) ON DELETE CASCADE,
+    FOREIGN KEY (test_session_id) REFERENCES test_sessions(test_session_id) ON DELETE CASCADE
+);
+
+-- Payments Table
+CREATE TABLE payments (
+    payment_id VARCHAR(20) PRIMARY KEY,
+    student_license_id VARCHAR(20) NOT NULL,
+    payment_type ENUM('Registration', 'Retest') NOT NULL,
+    payment_method VARCHAR(50) NOT NULL,
+    total_amount DECIMAL(10, 2) NOT NULL,
+    payment_datetime DATETIME DEFAULT CURRENT_TIMESTAMP,
+    payment_status ENUM('Pending', 'Completed') DEFAULT 'Pending',
+    FOREIGN KEY (student_license_id) REFERENCES student_licenses(student_license_id) ON DELETE CASCADE
+);
+
+
+-- PaymentDetails Table
+CREATE TABLE payment_details (
+    payment_detail_id VARCHAR(20) PRIMARY KEY,
+    payment_id VARCHAR(20) NOT NULL,
+    item_type ENUM('License', 'Lesson', 'Test') NOT NULL,
+    item_id VARCHAR(20) NOT NULL,
+    amount DECIMAL(10, 2) NOT NULL,
+    FOREIGN KEY (payment_id) REFERENCES payments(payment_id) ON DELETE CASCADE
+);
+
+-- Speciality Table
+CREATE TABLE specialities (
+    speciality_id VARCHAR(20) PRIMARY KEY,  
+    instructor_id VARCHAR(20) NOT NULL,
+    license_id VARCHAR(10) NOT NULL,  
+    FOREIGN KEY (instructor_id) REFERENCES instructors(instructor_id) ON DELETE CASCADE,
+    FOREIGN KEY (license_id) REFERENCES licenses(license_id) ON DELETE CASCADE
+);
+
+-- Announcement Table
+CREATE TABLE announcements (
+    announcement_id VARCHAR(20) PRIMARY KEY,
+    title VARCHAR(100) NOT NULL,
+    description TEXT NOT NULL,
+    created_by VARCHAR(20),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- RoleAnnouncement Table
+CREATE TABLE role_announcements (
+    role_announcement_id VARCHAR(20) PRIMARY KEY,
+    announcement_id VARCHAR(20) NOT NULL,
+    role_id VARCHAR(20) NOT NULL,
+    FOREIGN KEY (announcement_id) REFERENCES announcements(announcement_id) ON DELETE CASCADE,
+    FOREIGN KEY (role_id) REFERENCES roles(role_id) ON DELETE CASCADE
+);
+
+-- UserAnnouncement Table
+CREATE TABLE user_announcements (
+    user_announcement_id VARCHAR(20) PRIMARY KEY,
+    user_id VARCHAR(20) NOT NULL,
+    announcement_id VARCHAR(20) NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (announcement_id) REFERENCES announcements(announcement_id) ON DELETE CASCADE
+);
+
+-- Availability Table
+CREATE TABLE availability (
+    availability_id VARCHAR(20) PRIMARY KEY,
+    instructor_id VARCHAR(20) NOT NULL,
+    date DATE NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    status ENUM('Available', 'Unavailable') DEFAULT 'Available',
+    FOREIGN KEY (instructor_id) REFERENCES instructors(instructor_id) ON DELETE CASCADE
+);
+
+-----------------------------
+
+-- RefundRequests Table
+CREATE TABLE refund_requests (
+    refund_request_id INT AUTO_INCREMENT PRIMARY KEY,
+    payment_id VARCHAR(20) NOT NULL,
+    request_datetime DATETIME NOT NULL,
+    reason TEXT NOT NULL,
+    status ENUM('Pending', 'Approved', 'Rejected') DEFAULT 'Pending',
+    FOREIGN KEY (payment_id) REFERENCES payments(payment_id) ON DELETE CASCADE
+);
+
+-- Refund Table
+CREATE TABLE refunds (
+    refund_id INT AUTO_INCREMENT PRIMARY KEY,
+    refund_request_id INT NOT NULL,
+    amount DECIMAL(10, 2) NOT NULL,
+    refund_datetime DATETIME NOT NULL,
+    status ENUM('Processed', 'Pending') DEFAULT 'Pending',
+    FOREIGN KEY (refund_request_id) REFERENCES refund_requests(refund_request_id) ON DELETE CASCADE
+);
+
+-- FeedbackCategory Table
+CREATE TABLE feedback_categories (
+    feedback_category_id INT AUTO_INCREMENT PRIMARY KEY,
+    feedback_name VARCHAR(50) NOT NULL
+);
+
+-- Feedback Table
+CREATE TABLE feedback (
+    feedback_id INT AUTO_INCREMENT PRIMARY KEY,
+    feedback_category_id INT NOT NULL,
+    user_id VARCHAR(20) NOT NULL,
+    description TEXT NOT NULL,
+    FOREIGN KEY (feedback_category_id) REFERENCES feedback_categories(feedback_category_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+-- Attendance Table
+CREATE TABLE attendance (
+    attendance_id INT AUTO_INCREMENT PRIMARY KEY,
+    student_lesson_id VARCHAR(20) NOT NULL,
+    status ENUM('Present', 'Absent') DEFAULT 'Absent',
+    FOREIGN KEY (student_lesson_id) REFERENCES student_lessons(student_lesson_id) ON DELETE CASCADE
+);
+
+-- LessonChangeRequest Table
+CREATE TABLE lesson_change_requests (
+    change_request_id INT AUTO_INCREMENT PRIMARY KEY,
+    student_lesson_id VARCHAR(20) NOT NULL,
+    reason TEXT NOT NULL,
+    request_date DATE NOT NULL,
+    request_time TIME NOT NULL,
+    status ENUM('Pending', 'Approved', 'Rejected') DEFAULT 'Pending',
+    FOREIGN KEY (student_lesson_id) REFERENCES student_lessons(student_lesson_id) ON DELETE CASCADE
+);
+
+-- IssuedLicense Table
+CREATE TABLE issued_licenses (
+    issued_license_id INT AUTO_INCREMENT PRIMARY KEY,
+    student_license_id VARCHAR(20) NOT NULL,
+    issued_date DATE NOT NULL,
+    issued_time TIME NOT NULL,
+    status ENUM('Issued', 'Pending', 'Revoked') DEFAULT 'Pending',
+    FOREIGN KEY (student_license_id) REFERENCES student_licenses(student_license_id) ON DELETE CASCADE
+);
+
+
+
+
+

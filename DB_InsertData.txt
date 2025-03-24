@@ -1,0 +1,57 @@
+-- Insert roles
+INSERT INTO roles (role_id, description) 
+VALUES 
+    ('admin', 'Administrator with full system access'),
+    ('instructor', 'Responsible for conducting lessons'),
+    ('student', 'Learner who registers for lessons and tests');
+
+-- Insert users
+INSERT INTO users (user_id, role_id, ic, name, username, password, email, address, phone, created_at)
+VALUES
+    ('US001040125', 'admin', '010101011001', 'admin', 'admin', SHA2('admin', 256), 'admin@gmail.com', '123 Admin St.', '0123456789', NOW()),
+    ('US002040125', 'instructor', '020202022002', 'Nik Farees', 'nik', SHA2('nik', 256), 'nik@gmail.com', '123 Instructor Rd.', '0131234567', NOW()),
+    ('US003040125', 'student', '030303033003', 'Aiman Haziq', 'manjiq', SHA2('manjiq', 256), 'manjiq@gmail.com', '123 Student Ln.', '0141234567', NOW()),
+    ('US004040125', 'instructor', '040404044004', 'Muhammad Syahmi', 'syahmi', SHA2('syahmi', 256), 'syahmi@gmail.com', '456 Instructor Rd.', '015567891', NOW()),
+    ('US005040125', 'student', '050505055005', 'Idham Hakim', 'hakim', SHA2('hakim', 256), 'hakim@gmail.com', '456 Student Ln.', '0123456789', NOW());
+
+-- Populate administrators table
+INSERT INTO administrators (administrator_id, user_id) 
+VALUES 
+    ('AD001001', 'US001040125');
+
+
+-- Populate instructors table
+INSERT INTO instructors (instructor_id, user_id) 
+VALUES
+    ('IT001002', 'US002040125'),
+    ('IT002004', 'US004040125');
+
+
+-- Populate students table
+INSERT INTO students (student_id, user_id, dob, bank_number, bank_name) 
+VALUES
+    ('ST001003', 'US003040125', '2003-03-03', '1234567890', 'Student Bank'),
+    ('ST002005', 'US005040125', '2005-05-05', '9876543210', 'Bank of Students');
+
+
+-- Insert data into licenses
+INSERT INTO licenses (license_id, license_name, license_type, description, license_fee)
+VALUES 
+    ('LIC01', 'Manual Car', 'D', 'A Manual Car (D) License allows drivers to operate vehicles with a manual transmission. This license category typically covers standard passenger cars, requiring drivers to shift gears manually using a clutch. It is essential for those who prefer driving stick-shift vehicles or wish to expand their driving skills.', 1300.00), 
+    ('LIC02', 'Auto Car', 'DA', 'A DA License permits drivers to operate vehicles with an automatic transmission. Unlike manual cars, automatic vehicles do not require gear shifting, making them easier to drive and more convenient, especially for beginners. This license is ideal for those who prefer a smooth and hassle-free driving experience.', 1500.00);
+
+-- Insert data into lessons
+INSERT INTO lessons (lesson_id, lesson_name, lesson_fee)
+VALUES 
+    ('LES01', '4 Class Weekday', 200.00),
+    ('LES02', '4 Class Weekend', 300.00),
+    ('LES03', '8 Class Weekday', 400.00),
+    ('LES04', '8 Class Weekend', 600.00);
+
+-- Insert data into tests
+INSERT INTO tests (test_id, test_name, test_fee)
+VALUES 
+    ('TES01', 'Computer Test', 50.00),
+    ('TES02', 'QTI Test', 50.00),
+    ('TES03', 'Circuit Test', 100.00),
+    ('TES04', 'On-Road Test', 100.00);
