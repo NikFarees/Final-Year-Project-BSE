@@ -50,6 +50,7 @@ $result = $conn->query($query);
 
         <!-- Inner page content -->
         <div class="page-category">
+            
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h4 class="card-title">Announcements</h4>

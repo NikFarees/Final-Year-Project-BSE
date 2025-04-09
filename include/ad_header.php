@@ -175,8 +175,8 @@ $conn->close();
             </li>
 
             <!-- Manage Test -->
-            <li class="nav-item <?php echo strpos($_SERVER['PHP_SELF'], '/pages/admin/manage_test/list_unassigned_test.php') !== false ? 'active' : ''; ?>">
-              <a href="/pages/admin/manage_test/list_unassigned_test.php">
+            <li class="nav-item <?php echo strpos($_SERVER['PHP_SELF'], '/pages/admin/manage_test/list_test.php') !== false ? 'active' : ''; ?>">
+              <a href="/pages/admin/manage_test/list_test.php">
                 <i class="fas fa-layer-group"></i>
                 <p>Manage Test (X)</p>
               </a>
