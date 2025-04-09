@@ -71,23 +71,24 @@ $refundRequestsResult = $conn->query($refundRequestsQuery);
 
     <!-- Inner page content -->
     <div class="page-category">
-
       <div class="col-md-12">
         <div class="card">
           <div class="card-header">
             <h4 class="card-title">Payment & Refund Request List</h4>
           </div>
           <div class="card-body">
-            <ul class="nav nav-pills nav-secondary" id="pills-tab" role="tablist">
+            <ul class="nav nav-tabs nav-line nav-color-secondary" id="line-tab" role="tablist">
               <li class="nav-item">
-                <a class="nav-link active" id="pills-payments-tab" data-bs-toggle="pill" href="#pills-payments" role="tab" aria-controls="pills-payments" aria-selected="true">Payment List</a>
+                <a class="nav-link active" id="line-payments-tab" data-bs-toggle="pill" href="#line-payments" role="tab" aria-controls="line-payments" aria-selected="true">Payment List</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" id="pills-refunds-tab" data-bs-toggle="pill" href="#pills-refunds" role="tab" aria-controls="pills-refunds" aria-selected="false">Refund Requests</a>
+                <a class="nav-link" id="line-refunds-tab" data-bs-toggle="pill" href="#line-refunds" role="tab" aria-controls="line-refunds" aria-selected="false">Refund Requests</a>
               </li>
             </ul>
-            <div class="tab-content mt-2 mb-3" id="pills-tabContent">
-              <div class="tab-pane fade show active" id="pills-payments" role="tabpanel" aria-labelledby="pills-payments-tab">
+            <div class="tab-content mt-3 mb-3" id="line-tabContent">
+
+              <!-- Payment List -->
+              <div class="tab-pane fade show active" id="line-payments" role="tabpanel" aria-labelledby="line-payments-tab">
                 <div class="card mt-4">
                   <div class="card-body">
                     <div class="table-responsive">
@@ -127,7 +128,9 @@ $refundRequestsResult = $conn->query($refundRequestsQuery);
                   </div>
                 </div>
               </div>
-              <div class="tab-pane fade" id="pills-refunds" role="tabpanel" aria-labelledby="pills-refunds-tab">
+
+              <!-- Refund Requests -->
+              <div class="tab-pane fade" id="line-refunds" role="tabpanel" aria-labelledby="line-refunds-tab">
                 <div class="card mt-4">
                   <div class="card-body">
                     <div class="table-responsive">
@@ -168,15 +171,14 @@ $refundRequestsResult = $conn->query($refundRequestsQuery);
             </div>
           </div>
         </div>
-
       </div>
-
     </div>
   </div>
+</div>
 
-  <?php
-  include '../../../include/footer.html';
-  ?>
+<?php
+include '../../../include/footer.html';
+?>
 
 <script>
   $(document).ready(function() {
@@ -186,6 +188,10 @@ $refundRequestsResult = $conn->query($refundRequestsQuery);
     $(".clickable-row").click(function() {
       window.location = $(this).data("href");
     });
+  });
+
+  $(document).ready(function() {
+    $("#refunds-table").DataTable({});
   });
 </script>
 

@@ -154,8 +154,9 @@ $conn->close();
               </a>
             </li>
 
-            <li class="nav-item <?php echo in_array(basename($_SERVER['PHP_SELF']), ['#']) ? 'active' : ''; ?>">
-              <a href="#">
+            <!-- Manage Payment -->
+            <li class="nav-item <?php echo strpos($_SERVER['PHP_SELF'], '/pages/student/manage_payment/list_payment.php') !== false ? 'active' : ''; ?>">
+              <a href="/pages/student/manage_payment/list_payment.php">
                 <i class="fas fa-layer-group"></i>
                 <p>My Payment (X)</p>
               </a>
