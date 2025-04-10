@@ -81,7 +81,7 @@ $refundRequestsResult = $refundRequestsStmt->get_result();
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h4 class="card-title">Payment & Refund Request List</h4>
                         <div class="ms-md-auto py-2 py-md-0">
-                            <a href="#" class="btn btn-primary btn-round">Request Refund</a>
+                            <a href="#" class="btn btn-primary btn-round">Request Refund (X)</a>
                         </div>
                     </div>
                     <div class="card-body">

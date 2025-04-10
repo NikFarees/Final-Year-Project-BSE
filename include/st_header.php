@@ -244,7 +244,7 @@ $conn->close();
                     </li>
                     <li>
                       <div class="dropdown-divider"></div>
-                      <a class="dropdown-item" href="#">Account Setting</a>
+                      <a class="dropdown-item" href="/pages/student/manage_profile/view_profile.php">Profile</a>
                       <div class="dropdown-divider"></div>
                       <a class="dropdown-item" href="/authentication/logout.php">Logout</a>
                     </li>
