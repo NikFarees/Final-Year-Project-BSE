@@ -58,7 +58,7 @@ if (isset($_GET['confirm']) && $_GET['confirm'] === 'yes' && !empty($student_id)
                 icon: "success",
                 confirmButtonText: "OK"
             }).then(() => {
-                window.location.href = 'list_student.php';
+                window.location.href = 'list_users.php';
             });
         <?php elseif (!empty($errorMessage)): ?>
             Swal.fire({
@@ -67,7 +67,7 @@ if (isset($_GET['confirm']) && $_GET['confirm'] === 'yes' && !empty($student_id)
                 icon: "error",
                 confirmButtonText: "OK"
             }).then(() => {
-                window.location.href = 'list_student.php';
+                window.location.href = 'list_users.php';
             });
         <?php else: ?>
             Swal.fire({
@@ -85,7 +85,7 @@ if (isset($_GET['confirm']) && $_GET['confirm'] === 'yes' && !empty($student_id)
                 if (result.isConfirmed) {
                     window.location.href = "?id=<?php echo htmlspecialchars($student_id); ?>&confirm=yes";
                 } else {
-                    window.location.href = "list_student.php";
+                    window.location.href = "list_users.php";
                 }
             });
         <?php endif; ?>

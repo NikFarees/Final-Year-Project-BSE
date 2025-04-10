@@ -32,7 +32,7 @@ if ($result->num_rows == 0) {
                 text: 'Instructor not found!',
                 confirmButtonText: 'Back to Manage Instructor'
             }).then(() => {
-                window.location.href = 'instructor.php';
+                window.location.href = 'list_users.php';
             });
           </script>";
     exit;
@@ -98,7 +98,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         text: 'Instructor details updated successfully!',
                         confirmButtonText: 'OK'
                     }).then(() => {
-                        window.location.href = 'list_instructor.php';
+                        window.location.href = 'list_users.php';
                     });
                   </script>";
             exit;
@@ -138,7 +138,7 @@ if (!empty($errors)) {
                     <i class="icon-arrow-right"></i>
                 </li>
                 <li class="nav-item">
-                    <a href="/pages/admin/manage_instructor/list_instructor.php">Instructor List</a>
+                    <a href="/pages/admin/manage_user/list_users.php">User List</a>
                 </li>
                 <li class="separator">
                     <i class="icon-arrow-right"></i>

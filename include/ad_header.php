@@ -136,26 +136,11 @@ $conn->close();
             </li>
 
             <!-- Manage User -->
-            <li class="nav-item <?php echo strpos($_SERVER['PHP_SELF'], '/pages/admin/manage_student/list_student.php') !== false || strpos($_SERVER['PHP_SELF'], '/pages/admin/manage_instructor/list_instructor.php') !== false ? 'active' : ''; ?>">
-              <a data-bs-toggle="collapse" href="#tables">
+            <li class="nav-item <?php echo strpos($_SERVER['PHP_SELF'], '/pages/admin/manage_user/') !== false ? 'active' : ''; ?>">
+              <a href="/pages/admin/manage_user/list_users.php">
                 <i class="fas fa-layer-group"></i>
                 <p>Manage User</p>
-                <span class="caret"></span>
               </a>
-              <div class="collapse <?php echo strpos($_SERVER['PHP_SELF'], '/pages/admin/manage_student/list_student.php') !== false || strpos($_SERVER['PHP_SELF'], '/pages/admin/manage_instructor/list_instructor.php') !== false ? 'show' : ''; ?>" id="tables">
-                <ul class="nav nav-collapse">
-                  <li>
-                    <a href="/pages/admin/manage_student/list_student.php">
-                      <span class="sub-item">Student</span>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="/pages/admin/manage_instructor/list_instructor.php">
-                      <span class="sub-item">Instructor</span>
-                    </a>
-                  </li>
-                </ul>
-              </div>
             </li>
 
             <!-- Manage Speciality -->
@@ -183,26 +168,11 @@ $conn->close();
             </li>
 
             <!-- Manage Schedule -->
-            <li class="nav-item <?php echo strpos($_SERVER['PHP_SELF'], '/pages/admin/manage_schedule/list_student.php') !== false || strpos($_SERVER['PHP_SELF'], '/pages/admin/manage_schedule/list_instructor.php') !== false ? 'active' : ''; ?>">
-              <a data-bs-toggle="collapse" href="#forms">
+            <li class="nav-item <?php echo strpos($_SERVER['PHP_SELF'], '/pages/admin/manage_schedule/') !== false ? 'active' : ''; ?>">
+              <a href="/pages/admin/manage_schedule/list_users.php">
                 <i class="fas fa-layer-group"></i>
                 <p>Manage Schedule</p>
-                <span class="caret"></span>
               </a>
-              <div class="collapse <?php echo strpos($_SERVER['PHP_SELF'], '/pages/admin/manage_schedule/list_student.php') !== false || strpos($_SERVER['PHP_SELF'], '/pages/admin/manage_schedule/list_instructor.php') !== false ? 'show' : ''; ?>" id="forms">
-                <ul class="nav nav-collapse">
-                  <li>
-                    <a href="/pages/admin/manage_schedule/list_student.php">
-                      <span class="sub-item">Student's Schedule</span>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="/pages/admin/manage_schedule/list_instructor.php">
-                      <span class="sub-item">Instructor's Schedule</span>
-                    </a>
-                  </li>
-                </ul>
-              </div>
             </li>
 
             <!-- Manage Payment -->
@@ -222,8 +192,43 @@ $conn->close();
             </li>
 
 
+            <!--
 
-            <!--<li class="nav-item">
+            <li class="nav-item">
+              <a data-bs-toggle="collapse" href="#forms">
+                <i class="fas fa-map-marker-alt"></i>
+                <p>Maps</p>
+                <span class="caret"></span>
+              </a>
+              <div class="collapse" id="forms">
+                <ul class="nav nav-collapse">
+                  <li>
+                    <a href="maps/googlemaps.html">
+                      <span class="sub-item">Google Maps</span>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </li>
+
+            <li class="nav-item">
+              <a data-bs-toggle="collapse" href="#tables">
+                <i class="far fa-chart-bar"></i>
+                <p>Charts</p>
+                <span class="caret"></span>
+              </a>
+              <div class="collapse" id="tables">
+                <ul class="nav nav-collapse">
+                  <li>
+                    <a href="charts/charts.html">
+                      <span class="sub-item">Chart Js</span>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </li>
+            
+            <li class="nav-item">
               <a data-bs-toggle="collapse" href="#maps">
                 <i class="fas fa-map-marker-alt"></i>
                 <p>Maps</p>
@@ -255,7 +260,9 @@ $conn->close();
                   </li>
                 </ul>
               </div>
-            </li> -->
+            </li> 
+            
+            -->
 
 
           </ul>

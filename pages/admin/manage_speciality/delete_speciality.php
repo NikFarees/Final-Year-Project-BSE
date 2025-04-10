@@ -37,7 +37,7 @@ if (isset($_GET['confirm']) && $_GET['confirm'] === 'yes' && !empty($instructor_
                 icon: "success",
                 confirmButtonText: "OK"
             }).then(() => {
-                window.location.href = 'view_speciality.php?id=<?php echo $license_id; ?>';
+                window.location.href = 'list_speciality.php?id=<?php echo $license_id; ?>';
             });
         <?php elseif (!empty($errorMessage)): ?>
             Swal.fire({
@@ -46,7 +46,7 @@ if (isset($_GET['confirm']) && $_GET['confirm'] === 'yes' && !empty($instructor_
                 icon: "error",
                 confirmButtonText: "OK"
             }).then(() => {
-                window.location.href = 'view_speciality.php?id=<?php echo $license_id; ?>';
+                window.location.href = 'list_speciality.php?id=<?php echo $license_id; ?>';
             });
         <?php else: ?>
             Swal.fire({
@@ -64,7 +64,7 @@ if (isset($_GET['confirm']) && $_GET['confirm'] === 'yes' && !empty($instructor_
                 if (result.isConfirmed) {
                     window.location.href = "?instructor_id=<?php echo htmlspecialchars($instructor_id); ?>&license_id=<?php echo htmlspecialchars($license_id); ?>&confirm=yes";
                 } else {
-                    window.location.href = "view_speciality.php?id=<?php echo htmlspecialchars($license_id); ?>";
+                    window.location.href = "list_speciality.php?id=<?php echo htmlspecialchars($license_id); ?>";
                 }
             });
         <?php endif; ?>

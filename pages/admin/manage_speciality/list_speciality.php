@@ -1,8 +1,8 @@
 <?php
 include '../../../include/ad_header.php';
-include '../../../database/db_connection.php'; // Include the database connection file
+include '../../../database/db_connection.php';
 
-// Fetch licenses and their corresponding specialties from the database
+// Fetch licenses and their corresponding specialties
 $query = "
     SELECT 
         l.license_id, 
@@ -13,7 +13,7 @@ $query = "
     LEFT JOIN specialities s ON l.license_id = s.license_id
     GROUP BY l.license_id, l.license_name, l.license_type
 ";
-$result = $conn->query($query);
+$licenses_result = $conn->query($query);
 ?>
 
 <div class="container">
@@ -39,30 +39,83 @@ $result = $conn->query($query);
 
         <!-- Inner page content -->
         <div class="page-category">
-
-            <div class="row">
-                <?php if ($result && $result->num_rows > 0): ?>
-                    <?php while ($row = $result->fetch_assoc()): ?>
-                        <div class="col-md-6">
-                            <div class="card card-secondary">
-                                <div class="card-body skew-shadow">
-                                    <h1><?php echo htmlspecialchars($row['license_name']); ?> (<?php echo htmlspecialchars($row['license_type']); ?>)</h1>
-                                    <h5 class="op-8">Total Instructors</h5>
-                                    <div class="pull-right">
-                                        <h3 class="fw-bold op-8"><?php echo (int)$row['total_instructors']; ?></h3>
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">Specialities</h4>
+                    <!-- Add button to assign new speciality -->
+                </div>
+                <div class="card-body">
+                    <ul class="nav nav-tabs nav-line nav-color-secondary" id="speciality-tab" role="tablist">
+                        <?php
+                        $active = true;
+                        while ($license = $licenses_result->fetch_assoc()): ?>
+                            <li class="nav-item">
+                                <a class="nav-link <?php echo $active ? 'active' : ''; ?>" id="tab-<?php echo $license['license_id']; ?>" data-bs-toggle="pill" href="#content-<?php echo $license['license_id']; ?>" role="tab" aria-controls="content-<?php echo $license['license_id']; ?>" aria-selected="<?php echo $active ? 'true' : 'false'; ?>">
+                                    <?php echo htmlspecialchars($license['license_name']); ?> (<?php echo htmlspecialchars($license['license_type']); ?>)
+                                </a>
+                            </li>
+                        <?php
+                        $active = false;
+                        endwhile; ?>
+                    </ul>
+                    <div class="tab-content mt-3" id="speciality-tabContent">
+                        <?php
+                        $licenses_result->data_seek(0); // Reset result pointer
+                        $active = true;
+                        while ($license = $licenses_result->fetch_assoc()):
+                            // Fetch instructors for the current license
+                            $license_id = $license['license_id'];
+                            $instructors_query = "
+                                SELECT s.speciality_id, u.name AS instructor_name, s.instructor_id
+                                FROM specialities s
+                                JOIN instructors i ON s.instructor_id = i.instructor_id
+                                JOIN users u ON i.user_id = u.user_id
+                                WHERE s.license_id = '$license_id'
+                            ";
+                            $instructors_result = $conn->query($instructors_query);
+                        ?>
+                            <div class="tab-pane fade <?php echo $active ? 'show active' : ''; ?>" id="content-<?php echo $license['license_id']; ?>" role="tabpanel" aria-labelledby="tab-<?php echo $license['license_id']; ?>">
+                                <div class="card mt-4">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h4 class="card-title"><?php echo htmlspecialchars($license['license_name']); ?> (<?php echo htmlspecialchars($license['license_type']); ?>)</h4>
+                                        <div class="ms-md-auto py-2 py-md-0">
+                                            <a href="../manage_speciality/assign_speciality.php?license_id=<?php echo htmlspecialchars($license_id); ?>" class="btn btn-primary btn-round">Assign Speciality</a>
+                                        </div>
                                     </div>
-                                    <div class="mt-3">
-                                        <a href="../manage_speciality/view_speciality.php?id=<?php echo urlencode($row['license_id']); ?>" class="btn btn-sm detail-view-btn"><b>Detail View</b></a>
+                                    <div class="card-body">
+                                        <?php if ($instructors_result->num_rows > 0): ?>
+                                            <table class="table table-striped" id="basic-datatables-<?php echo $license['license_id']; ?>">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Speciality ID</th>
+                                                        <th>Instructor Name</th>
+                                                        <th>Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <?php while ($speciality = $instructors_result->fetch_assoc()): ?>
+                                                        <tr>
+                                                            <td><?php echo htmlspecialchars($speciality['speciality_id']); ?></td>
+                                                            <td><?php echo htmlspecialchars($speciality['instructor_name']); ?></td>
+                                                            <td>
+                                                                <a href="delete_speciality.php?instructor_id=<?php echo htmlspecialchars($speciality['instructor_id']); ?>&license_id=<?php echo htmlspecialchars($license_id); ?>" class="text-danger">Delete</a>
+                                                            </td>
+                                                        </tr>
+                                                    <?php endwhile; ?>
+                                                </tbody>
+                                            </table>
+                                        <?php else: ?>
+                                            <p>No instructors assigned to this specialty.</p>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    <?php endwhile; ?>
-                <?php else: ?>
-                    <p>No specialties found.</p>
-                <?php endif; ?>
+                        <?php
+                        $active = false;
+                        endwhile; ?>
+                    </div>
+                </div>
             </div>
-
         </div>
 
     </div>
@@ -72,16 +125,13 @@ $result = $conn->query($query);
 include '../../../include/footer.html';
 ?>
 
-<style>
-    .detail-view-btn {
-        background-color: #FFF;
-        border-color: #FFF;
-        font-size: 0.9em; /* Increase font size */
-    }
-    .detail-view-btn:hover {
-        background-color: #D3D3D3; /* Change hover color to gray */
-        border-color: #D3D3D3;
-        /* Change font color to black */
-        color: #000;
-    }
-</style>
+<script>
+    $(document).ready(function() {
+        // Initialize DataTables for each specialty table
+        <?php
+        $licenses_result->data_seek(0); // Reset result pointer
+        while ($license = $licenses_result->fetch_assoc()): ?>
+            $("#basic-datatables-<?php echo $license['license_id']; ?>").DataTable({});
+        <?php endwhile; ?>
+    });
+</script>

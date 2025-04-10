@@ -27,7 +27,7 @@ if ($result->num_rows == 0) {
                 text: 'Student not found!',
                 confirmButtonText: 'Back to Manage Student'
             }).then(() => {
-                window.location.href = 'list_student.php';
+                window.location.href = 'list_users.php';
             });
           </script>";
     exit;
@@ -52,7 +52,7 @@ $student = $result->fetch_assoc();
           <i class="icon-arrow-right"></i>
         </li>
         <li class="nav-item">
-          <a href="/pages/admin/manage_student/list_student.php">Student List</a>
+          <a href="/pages/admin/manage_user/list_users.php">User List</a>
         </li>
         <li class="separator">
           <i class="icon-arrow-right"></i>

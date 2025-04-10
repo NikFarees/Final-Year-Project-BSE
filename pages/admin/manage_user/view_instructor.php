@@ -27,7 +27,7 @@ if ($result->num_rows == 0) {
                 text: 'Instructor not found!',
                 confirmButtonText: 'Back to Manage Instructor'
             }).then(() => {
-                window.location.href = 'list_instructor.php';
+                window.location.href = 'list_users.php';
             });
           </script>";
     exit;
@@ -52,7 +52,7 @@ $instructor = $result->fetch_assoc();
           <i class="icon-arrow-right"></i>
         </li>
         <li class="nav-item">
-          <a href="/pages/admin/manage_instructor/list_instructor.php">Instructor List</a>
+          <a href="/pages/admin/manage_user/list_users.php">User List</a>
         </li>
         <li class="separator">
           <i class="icon-arrow-right"></i>

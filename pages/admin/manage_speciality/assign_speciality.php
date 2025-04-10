@@ -76,7 +76,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         text: 'Specialty assigned successfully!',
                         confirmButtonText: 'OK'
                     }).then(() => {
-                        window.location.href = 'view_speciality.php?id=$license_id';
+                        window.location.href = 'list_speciality.php?id=$license_id';
                     });
                   </script>";
             exit;
@@ -116,12 +116,6 @@ if (!empty($errors)) {
                 </li>
                 <li class="nav-item">
                     <a href="/pages/admin/manage_speciality/list_speciality.php">Speciality List</a>
-                </li>
-                <li class="separator">
-                    <i class="icon-arrow-right"></i>
-                </li>
-                <li class="nav-item">
-                    <a href="/pages/admin/manage_speciality/view_speciality.php?id=<?php echo $license_id; ?>">View Speciality</a>
                 </li>
                 <li class="separator">
                     <i class="icon-arrow-right"></i>

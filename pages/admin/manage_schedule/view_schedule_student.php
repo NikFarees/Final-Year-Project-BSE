@@ -79,7 +79,7 @@ while ($row = $lessonsResult->fetch_assoc()) {
                     <i class="icon-arrow-right"></i>
                 </li>
                 <li class="nav-item">
-                    <a href="/pages/admin/manage_schedule/list_student.php">Student List</a>
+                    <a href="/pages/admin/manage_schedule/list_users.php">User List</a>
                 </li>
                 <li class="separator">
                     <i class="icon-arrow-right"></i>

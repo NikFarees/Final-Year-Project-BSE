@@ -183,6 +183,7 @@ include '../../../include/footer.html';
 <script>
   $(document).ready(function() {
     $("#payments-table").DataTable({});
+    $("#refunds-table").DataTable({});
 
     // Make entire row clickable
     $(".clickable-row").click(function() {
@@ -190,9 +191,6 @@ include '../../../include/footer.html';
     });
   });
 
-  $(document).ready(function() {
-    $("#refunds-table").DataTable({});
-  });
 </script>
 
 <style>

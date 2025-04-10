@@ -73,7 +73,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <i class="icon-arrow-right"></i>
                 </li>
                 <li class="nav-item">
-                    <a href="/pages/admin/manage_instructor/list_instructor.php">Instructor List</a>
+                    <a href="/pages/admin/manage_user/list_users.php">User List</a>
                 </li>
                 <li class="separator">
                     <i class="icon-arrow-right"></i>
@@ -140,7 +140,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 icon: "success",
                 confirmButtonText: "OK"
             }).then(() => {
-                window.location.href = 'list_instructor.php';
+                window.location.href = 'list_users.php';
             });
         <?php endif; ?>
     });
