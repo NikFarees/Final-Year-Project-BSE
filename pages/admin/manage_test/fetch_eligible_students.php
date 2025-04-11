@@ -6,7 +6,7 @@ $testId = $_GET['test_id'] ?? null;
 if ($testId) {
     $query = "
         SELECT 
-            u.user_id,
+            st.student_test_id,
             u.name AS student_name,
             l.license_name
         FROM 

@@ -117,7 +117,6 @@ $licenses_result = $conn->query($query);
                 </div>
             </div>
         </div>
-
     </div>
 </div>
 
