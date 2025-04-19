@@ -71,7 +71,7 @@ try {
     // Generate and insert student_lessons
     $num_lessons = in_array($lesson_id, ['LES01', 'LES02']) ? 4 : (in_array($lesson_id, ['LES03', 'LES04']) ? 8 : 0);
     if ($num_lessons > 0) {
-        $lesson_stmt = $conn->prepare("INSERT INTO student_lessons (student_lesson_id, student_license_id, student_lesson_name, status) VALUES (?, ?, ?, 'Pending')");
+        $lesson_stmt = $conn->prepare("INSERT INTO student_lessons (student_lesson_id, student_license_id, student_lesson_name, status) VALUES (?, ?, ?, 'ineligible')");
         for ($i = 1; $i <= $num_lessons; $i++) {
             $lesson_count_query = $conn->query("SELECT MAX(CAST(SUBSTRING(student_lesson_id, 10, 3) AS UNSIGNED)) AS max_id FROM student_lessons WHERE SUBSTRING(student_lesson_id, 6, 3) = LPAD('$license_count', 3, '0')");
             $lesson_count_row = $lesson_count_query->fetch_assoc();

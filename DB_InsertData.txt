@@ -55,3 +55,11 @@ VALUES
     ('TES02', 'QTI Test', 50.00),
     ('TES03', 'Circuit Test', 100.00),
     ('TES04', 'On-Road Test', 100.00);
+
+-- Insert data into feedback_categories
+INSERT INTO feedback_categories (feedback_category_id, feedback_name, description) VALUES
+    ('FC01', 'Website Issue', 'Feedback related to bugs, errors, or performance issues on the website.'),
+    ('FC02', 'Staff Behavior', 'Feedback regarding interactions with staff or users.'),
+    ('FC03', 'Feature Request', 'Suggestions for new features or improvements.'),
+    ('FC04', 'Account Issues', 'Problems related to login, signup, or account settings.'),
+    ('FC05', 'Other', 'Any feedback that does not fit in the listed categories.');

@@ -128,7 +128,7 @@ $conn->close();
             </li>
 
             <!-- Manage License -->
-            <li class="nav-item <?php echo strpos($_SERVER['PHP_SELF'], '/pages/admin/manage_license/list_license.php') !== false ? 'active' : ''; ?>">
+            <li class="nav-item <?php echo strpos($_SERVER['PHP_SELF'], '/pages/admin/manage_license/') !== false ? 'active' : ''; ?>">
               <a href="/pages/admin/manage_license/list_license.php">
                 <i class="fas fa-layer-group"></i>
                 <p>Manage License</p>
@@ -144,7 +144,7 @@ $conn->close();
             </li>
 
             <!-- Manage Speciality -->
-            <li class="nav-item <?php echo strpos($_SERVER['PHP_SELF'], '/pages/admin/manage_speciality/list_speciality.php') !== false ? 'active' : ''; ?>">
+            <li class="nav-item <?php echo strpos($_SERVER['PHP_SELF'], '/pages/admin/manage_speciality/') !== false ? 'active' : ''; ?>">
               <a href="/pages/admin/manage_speciality/list_speciality.php">
                 <i class="fas fa-layer-group"></i>
                 <p>Manage Speciality</p>
@@ -152,7 +152,7 @@ $conn->close();
             </li>
 
             <!-- Manage Lesson -->
-            <li class="nav-item <?php echo strpos($_SERVER['PHP_SELF'], '/pages/admin/manage_lesson/list_unassigned_lesson.php') !== false ? 'active' : ''; ?>">
+            <li class="nav-item <?php echo strpos($_SERVER['PHP_SELF'], '/pages/admin/manage_lesson/') !== false ? 'active' : ''; ?>">
               <a href="/pages/admin/manage_lesson/list_unassigned_lesson.php">
                 <i class="fas fa-layer-group"></i>
                 <p>Manage Lesson (X)</p>
@@ -160,10 +160,10 @@ $conn->close();
             </li>
 
             <!-- Manage Test -->
-            <li class="nav-item <?php echo strpos($_SERVER['PHP_SELF'], '/pages/admin/manage_test/list_test.php') !== false ? 'active' : ''; ?>">
+            <li class="nav-item <?php echo strpos($_SERVER['PHP_SELF'], '/pages/admin/manage_test/') !== false ? 'active' : ''; ?>">
               <a href="/pages/admin/manage_test/list_test.php">
                 <i class="fas fa-layer-group"></i>
-                <p>Manage Test (X)</p>
+                <p>Manage Test</p>
               </a>
             </li>
 
@@ -176,18 +176,18 @@ $conn->close();
             </li>
 
             <!-- Manage Payment -->
-            <li class="nav-item <?php echo strpos($_SERVER['PHP_SELF'], '/pages/admin/manage_payment/list_payment.php') !== false ? 'active' : ''; ?>">
+            <li class="nav-item <?php echo strpos($_SERVER['PHP_SELF'], '/pages/admin/manage_payment/') !== false ? 'active' : ''; ?>">
               <a href="/pages/admin/manage_payment/list_payment.php">
                 <i class="fas fa-layer-group"></i>
-                <p>Manage Payment (X)</p>
+                <p>Manage Payment</p>
               </a>
             </li>
 
             <!-- Manage Feedback -->
-            <li class="nav-item <?php echo strpos($_SERVER['PHP_SELF'], '#') !== false ? 'active' : ''; ?>">
-              <a href="#">
+            <li class="nav-item <?php echo strpos($_SERVER['PHP_SELF'], '/pages/admin/manage_feedback/') !== false ? 'active' : ''; ?>">
+              <a href="/pages/admin/manage_feedback/list_feedback.php">
                 <i class="fas fa-layer-group"></i>
-                <p>Manage Feedback (X)</p>
+                <p>Manage Feedback</p>
               </a>
             </li>
 

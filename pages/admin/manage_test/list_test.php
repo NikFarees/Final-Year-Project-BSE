@@ -2,6 +2,23 @@
 include '../../../include/ad_header.php';
 include '../../../database/db_connection.php';
 
+// Set the correct timezone
+date_default_timezone_set('Asia/Kuala_Lumpur');
+$currentDateTime = date('Y-m-d H:i:s');
+
+// Update status of past tests to 'Completed'
+$updateQuery = "
+  UPDATE test_sessions 
+  SET status = 'Completed' 
+  WHERE status = 'Scheduled' 
+    AND STR_TO_DATE(CONCAT(test_date, ' ', end_time), '%Y-%m-%d %H:%i:%s') <= ?
+";
+
+$stmt = mysqli_prepare($conn, $updateQuery);
+mysqli_stmt_bind_param($stmt, 's', $currentDateTime);
+mysqli_stmt_execute($stmt);
+mysqli_stmt_close($stmt);
+
 // Fetch Upcoming Tests
 function fetchUpcomingTests($conn)
 {
@@ -12,7 +29,11 @@ function fetchUpcomingTests($conn)
         ts.test_date,
         ts.start_time,
         ts.end_time,
-        ts.status
+        ts.capacity_students,
+        ts.status,
+        (SELECT COUNT(*) 
+         FROM student_test_sessions sts 
+         WHERE sts.test_session_id = ts.test_session_id) AS enrolled_count
     FROM 
         test_sessions AS ts
     JOIN 
@@ -35,7 +56,11 @@ function fetchPastTests($conn)
         ts.test_date,
         ts.start_time,
         ts.end_time,
-        ts.status
+        ts.capacity_students,
+        ts.status,
+        (SELECT COUNT(*) 
+         FROM student_test_sessions sts 
+         WHERE sts.test_session_id = ts.test_session_id) AS enrolled_count
     FROM 
         test_sessions AS ts
     JOIN 
@@ -127,13 +152,15 @@ $eligibilityStudentsResult = fetchEligibilityStudents($conn);
             <!-- Upcoming Tests -->
             <div class="tab-pane fade show active" id="line-upcoming-tests" role="tabpanel" aria-labelledby="line-upcoming-tests-tab">
               <div class="table-responsive">
-                <table id="upcoming-tests-table" class="table table-bordered table-striped">
+                <table id="upcoming-tests-table" class="table table-bordered table-striped table-hover">
                   <thead>
                     <tr>
                       <th>Test Name</th>
                       <th>Date</th>
                       <th>Start Time</th>
                       <th>End Time</th>
+                      <th>Capacity</th>
+                      <th>Enrolled</th>
                       <th>Status</th>
                     </tr>
                   </thead>
@@ -141,16 +168,18 @@ $eligibilityStudentsResult = fetchEligibilityStudents($conn);
                     <?php
                     if (mysqli_num_rows($upcomingTestsResult) > 0) {
                       while ($row = mysqli_fetch_assoc($upcomingTestsResult)) {
-                        echo "<tr>
-                                                <td>{$row['test_name']}</td>
-                                                <td>{$row['test_date']}</td>
-                                                <td>{$row['start_time']}</td>
-                                                <td>{$row['end_time']}</td>
-                                                <td>{$row['status']}</td>
-                                            </tr>";
+                        echo "<tr class='clickable-row' data-href='edit_test.php?test_session_id=" . htmlspecialchars($row['test_session_id']) . "'>
+                              <td>" . htmlspecialchars($row['test_name']) . "</td>
+                              <td>" . htmlspecialchars($row['test_date']) . "</td>
+                              <td>" . htmlspecialchars($row['start_time']) . "</td>
+                              <td>" . htmlspecialchars($row['end_time']) . "</td>
+                              <td>" . htmlspecialchars($row['capacity_students']) . "</td>
+                              <td>" . htmlspecialchars($row['enrolled_count']) . "</td>
+                              <td>" . htmlspecialchars($row['status']) . "</td>
+                            </tr>";
                       }
                     } else {
-                      echo "<tr><td colspan='5'>No upcoming tests found.</td></tr>";
+                      echo "<tr><td colspan='7'>No upcoming tests found.</td></tr>";
                     }
                     ?>
                   </tbody>
@@ -161,13 +190,15 @@ $eligibilityStudentsResult = fetchEligibilityStudents($conn);
             <!-- Past Tests -->
             <div class="tab-pane fade" id="line-past-tests" role="tabpanel" aria-labelledby="line-past-tests-tab">
               <div class="table-responsive">
-                <table id="past-tests-table" class="table table-bordered table-striped">
+                <table id="past-tests-table" class="table table-bordered table-striped table-hover">
                   <thead>
                     <tr>
                       <th>Test Name</th>
                       <th>Date</th>
                       <th>Start Time</th>
                       <th>End Time</th>
+                      <th>Capacity</th>
+                      <th>Enrolled</th>
                       <th>Status</th>
                     </tr>
                   </thead>
@@ -176,15 +207,17 @@ $eligibilityStudentsResult = fetchEligibilityStudents($conn);
                     if (mysqli_num_rows($pastTestsResult) > 0) {
                       while ($row = mysqli_fetch_assoc($pastTestsResult)) {
                         echo "<tr>
-                                                <td>{$row['test_name']}</td>
-                                                <td>{$row['test_date']}</td>
-                                                <td>{$row['start_time']}</td>
-                                                <td>{$row['end_time']}</td>
-                                                <td>{$row['status']}</td>
-                                            </tr>";
+                                <td>{$row['test_name']}</td>
+                                <td>{$row['test_date']}</td>
+                                <td>{$row['start_time']}</td>
+                                <td>{$row['end_time']}</td>
+                                <td>{$row['capacity_students']}</td>
+                                <td>{$row['enrolled_count']}</td>
+                                <td>{$row['status']}</td>
+                              </tr>";
                       }
                     } else {
-                      echo "<tr><td colspan='5'>No past tests found.</td></tr>";
+                      echo "<tr><td colspan='7'>No past tests found.</td></tr>";
                     }
                     ?>
                   </tbody>
@@ -208,10 +241,10 @@ $eligibilityStudentsResult = fetchEligibilityStudents($conn);
                     if (mysqli_num_rows($eligibilityStudentsResult) > 0) {
                       while ($row = mysqli_fetch_assoc($eligibilityStudentsResult)) {
                         echo "<tr>
-                                                <td>{$row['student_name']}</td>
-                                                <td>{$row['test_name']}</td>
-                                                <td>{$row['license_name']}</td>
-                                            </tr>";
+                                <td>{$row['student_name']}</td>
+                                <td>{$row['test_name']}</td>
+                                <td>{$row['license_name']}</td>
+                              </tr>";
                       }
                     } else {
                       echo "<tr><td colspan='3'>No eligible students found.</td></tr>";
@@ -244,4 +277,17 @@ include '../../../include/footer.html';
   $(document).ready(function() {
     $("#eligibility-table").DataTable({});
   });
+
+  // Make table rows clickable
+  $(document).ready(function() {
+    $(".clickable-row").click(function() {
+      window.location = $(this).data("href");
+    });
+  });
 </script>
+
+<style>
+  .clickable-row {
+    cursor: pointer;
+  }
+</style>

@@ -21,8 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $end_time = $_POST['endTime'];
     $capacity = $_POST['capacity'];
     $instructor_id = $_POST['instructor'];
-    $eligible_students = $_POST['eligibleStudents']; // This must now be student_test_id array
-
+    $eligible_students = isset($_POST['eligibleStudents']) ? $_POST['eligibleStudents'] : [];
     date_default_timezone_set('Asia/Kuala_Lumpur');
     $date_format = date("dmy");
 
@@ -42,6 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new Exception("Failed to insert test session. Error: " . $insert_session_stmt->error);
         }
 
+        // Process eligible students 
         foreach ($eligible_students as $student_test_id) {
             // Update schedule_status to 'Assigned'
             $update_student_test_sql = "UPDATE student_tests SET schedule_status = 'Assigned' WHERE student_test_id = ?";
@@ -53,19 +53,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // Get numeric student_id (nnn part)
             $student_id_result = $conn->query("
-                SELECT s.student_id FROM students s
-                JOIN student_licenses sl ON sl.student_id = s.student_id
-                JOIN student_tests st ON st.student_license_id = sl.student_license_id
-                WHERE st.student_test_id = '$student_test_id' LIMIT 1
-            ");
+            SELECT s.student_id FROM students s
+            JOIN student_licenses sl ON sl.student_id = s.student_id
+            JOIN student_tests st ON st.student_license_id = sl.student_license_id
+            WHERE st.student_test_id = '$student_test_id' LIMIT 1
+        ");
             $student_id_row = $student_id_result->fetch_assoc();
             $student_id_numeric = substr($student_id_row['student_id'], -3); // → "002"
 
             // Get increment for student_test_sessions (xxx part)
             $session_increment_result = $conn->query("
-                SELECT MAX(CAST(SUBSTRING(student_test_session_id, 6, 3) AS UNSIGNED)) AS max_id 
-                FROM student_test_sessions
-            ");
+            SELECT MAX(CAST(SUBSTRING(student_test_session_id, 6, 3) AS UNSIGNED)) AS max_id 
+            FROM student_test_sessions
+        ");
             $session_increment_row = $session_increment_result->fetch_assoc();
             $session_increment = $session_increment_row['max_id'] ? $session_increment_row['max_id'] + 1 : 1;
 
@@ -79,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // Insert into student_test_sessions
             $insert_student_session_sql = "INSERT INTO student_test_sessions (student_test_session_id, student_test_id, test_session_id) 
-                                           VALUES (?, ?, ?)";
+                                       VALUES (?, ?, ?)";
             $insert_student_session_stmt = $conn->prepare($insert_student_session_sql);
             $insert_student_session_stmt->bind_param("sss", $student_test_session_id, $student_test_id, $test_session_id);
             if (!$insert_student_session_stmt->execute()) {
@@ -321,6 +321,5 @@ ob_end_flush();
         <?php endif; ?>
     });
 </script>
-
 
 <?php include '../../../include/footer.html'; ?>

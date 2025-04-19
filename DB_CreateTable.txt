@@ -109,9 +109,11 @@ CREATE TABLE student_tests (
     status ENUM('Passed', 'Failed', 'Pending', 'Ineligible') DEFAULT 'Ineligible',
     schedule_status ENUM('Assigned', 'Unassigned') DEFAULT 'Unassigned',
     score DECIMAL(5, 2),
+    comment TEXT NULL,
     FOREIGN KEY (test_id) REFERENCES tests(test_id) ON DELETE CASCADE,
     FOREIGN KEY (student_license_id) REFERENCES student_licenses(student_license_id) ON DELETE CASCADE
 );
+
 
 -- TestSession Table 
 CREATE TABLE test_sessions (
@@ -127,14 +129,15 @@ CREATE TABLE test_sessions (
     FOREIGN KEY (instructor_id) REFERENCES instructors(instructor_id) ON DELETE SET NULL
 );
 
--- StudentTestSessions Table
 CREATE TABLE student_test_sessions (
     student_test_session_id VARCHAR(20) PRIMARY KEY,
     student_test_id VARCHAR(20) NOT NULL,
     test_session_id VARCHAR(20) NOT NULL,
+    attendance_status ENUM('Attend', 'Absent') DEFAULT 'Absent',
     FOREIGN KEY (student_test_id) REFERENCES student_tests(student_test_id) ON DELETE CASCADE,
     FOREIGN KEY (test_session_id) REFERENCES test_sessions(test_session_id) ON DELETE CASCADE
 );
+
 
 -- Payments Table
 CREATE TABLE payments (
@@ -206,6 +209,38 @@ CREATE TABLE availability (
     FOREIGN KEY (instructor_id) REFERENCES instructors(instructor_id) ON DELETE CASCADE
 );
 
+-- Feedback Categories Table
+CREATE TABLE feedback_categories (
+    feedback_category_id VARCHAR(20) PRIMARY KEY,
+    feedback_name VARCHAR(50) NOT NULL,
+    description TEXT
+);
+
+-- Feedback Table (user-submitted)
+CREATE TABLE feedback (
+    feedback_id VARCHAR(20) PRIMARY KEY,
+    feedback_category_id VARCHAR(20) NOT NULL,
+    user_id VARCHAR(20) NOT NULL,
+    target_user_id VARCHAR(20) DEFAULT NULL,
+    description TEXT NOT NULL,
+    submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    status ENUM('pending', 'resolved') DEFAULT 'pending',
+    FOREIGN KEY (feedback_category_id) REFERENCES feedback_categories(feedback_category_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (target_user_id) REFERENCES users(user_id) ON DELETE SET NULL
+);
+
+-- Feedback Replies Table (admin responses)
+CREATE TABLE feedback_replies (
+    reply_id VARCHAR(20) PRIMARY KEY,
+    feedback_id VARCHAR(20) NOT NULL,
+    admin_id VARCHAR(20) NOT NULL,
+    reply_text TEXT NOT NULL,
+    reply_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (feedback_id) REFERENCES feedback(feedback_id) ON DELETE CASCADE,
+    FOREIGN KEY (admin_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
 -----------------------------
 
 -- RefundRequests Table
@@ -226,22 +261,6 @@ CREATE TABLE refunds (
     refund_datetime DATETIME NOT NULL,
     status ENUM('Processed', 'Pending') DEFAULT 'Pending',
     FOREIGN KEY (refund_request_id) REFERENCES refund_requests(refund_request_id) ON DELETE CASCADE
-);
-
--- FeedbackCategory Table
-CREATE TABLE feedback_categories (
-    feedback_category_id INT AUTO_INCREMENT PRIMARY KEY,
-    feedback_name VARCHAR(50) NOT NULL
-);
-
--- Feedback Table
-CREATE TABLE feedback (
-    feedback_id INT AUTO_INCREMENT PRIMARY KEY,
-    feedback_category_id INT NOT NULL,
-    user_id VARCHAR(20) NOT NULL,
-    description TEXT NOT NULL,
-    FOREIGN KEY (feedback_category_id) REFERENCES feedback_categories(feedback_category_id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
 -- Attendance Table
@@ -272,8 +291,3 @@ CREATE TABLE issued_licenses (
     status ENUM('Issued', 'Pending', 'Revoked') DEFAULT 'Pending',
     FOREIGN KEY (student_license_id) REFERENCES student_licenses(student_license_id) ON DELETE CASCADE
 );
-
-
-
-
-

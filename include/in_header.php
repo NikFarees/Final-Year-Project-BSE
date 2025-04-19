@@ -126,43 +126,53 @@ $conn->close();
               <h4 class="text-section">Components</h4>
             </li>
 
-            <li class="nav-item <?php echo in_array(basename($_SERVER['PHP_SELF']), ['#']) ? 'active' : ''; ?>">
+            <!-- Manage Student -->
+            <li class="nav-item <?php echo strpos($_SERVER['PHP_SELF'], '#') !== false ? 'active' : ''; ?>">
+              <a href="#">
+                <i class="fas fa-layer-group"></i>
+                <p>Manage Student (X)</p>
+              </a>
+            </li>
+
+            <!-- Manage Attendance -->
+            <li class="nav-item <?php echo strpos($_SERVER['PHP_SELF'], '#') !== false ? 'active' : ''; ?>">
+              <a href="#">
+                <i class="fas fa-layer-group"></i>
+                <p>Manage Attendance (X)</p>
+              </a>
+            </li>
+
+            <!-- Manage Test -->
+            <li class="nav-item <?php echo strpos($_SERVER['PHP_SELF'], '/pages/instructor/manage_test/') !== false ? 'active' : ''; ?>">
+              <a href="/pages/instructor/manage_test/list_test.php">
+                <i class="fas fa-layer-group"></i>
+                <p>Manage Test</p>
+              </a>
+            </li>
+
+            <!-- My Schedule -->
+            <li class="nav-item <?php echo strpos($_SERVER['PHP_SELF'], '#') !== false ? 'active' : ''; ?>">
               <a href="#">
                 <i class="fas fa-layer-group"></i>
                 <p>My Schedule (X)</p>
               </a>
             </li>
 
-            <li class="nav-item <?php echo in_array(basename($_SERVER['PHP_SELF']), ['#']) ? 'active' : ''; ?>">
-              <a href="#">
+            <!-- My Speciality -->
+            <li class="nav-item <?php echo strpos($_SERVER['PHP_SELF'], '/pages/instructor/manage_speciality/') !== false ? 'active' : ''; ?>">
+              <a href="/pages/instructor/manage_speciality/view_speciality.php">
                 <i class="fas fa-layer-group"></i>
-                <p>My Student (X)</p>
+                <p>My Speciality</p>
               </a>
             </li>
 
-            <li class="nav-item <?php echo in_array(basename($_SERVER['PHP_SELF']), ['#']) ? 'active' : ''; ?>">
-              <a href="#">
+            <!-- My Feedback -->
+            <li class="nav-item <?php echo strpos($_SERVER['PHP_SELF'], '/pages/instructor/manage_feedback/') !== false ? 'active' : ''; ?>">
+              <a href="/pages/instructor/manage_feedback/list_feedback.php">
                 <i class="fas fa-layer-group"></i>
-                <p>Attendance (X)</p>
+                <p>My Feedback</p>
               </a>
             </li>
-
-            <li class="nav-item <?php echo in_array(basename($_SERVER['PHP_SELF']), ['#']) ? 'active' : ''; ?>">
-              <a href="#">
-                <i class="fas fa-layer-group"></i>
-                <p>My Speciality (X)</p>
-              </a>
-            </li>
-
-            <li class="nav-item <?php echo in_array(basename($_SERVER['PHP_SELF']), ['#']) ? 'active' : ''; ?>">
-              <a href="#">
-                <i class="fas fa-layer-group"></i>
-                <p>Feedback (X)</p>
-              </a>
-            </li>
-
-
-
           </ul>
         </div>
       </div>

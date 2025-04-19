@@ -56,7 +56,7 @@ $refundRequestsResult = $conn->query($refundRequestsQuery);
       <h4 class="page-title">Manage Payment</h4>
       <ul class="breadcrumbs">
         <li class="nav-home">
-          <a href="#">
+          <a href="/pages/admin/dashboard.php">
             <i class="icon-home"></i>
           </a>
         </li>
@@ -183,9 +183,14 @@ include '../../../include/footer.html';
 <script>
   $(document).ready(function() {
     $("#payments-table").DataTable({});
-    $("#refunds-table").DataTable({});
+  });
 
-    // Make entire row clickable
+  $(document).ready(function() {
+    $("#refunds-table").DataTable({});
+  });
+
+  // Make entire row clickable
+  $(document).ready(function() {
     $(".clickable-row").click(function() {
       window.location = $(this).data("href");
     });

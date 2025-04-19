@@ -165,41 +165,6 @@ $user_id = $_SESSION['user_id'];
               </div>
             </div>
           </div>
-
-          <!-- Speciality Information Card -->
-          <div class="card">
-            <div class="card-header">
-              <div class="card-title">Speciality Information</div>
-              <div class="card-category">Licenses the instructor specializes in</div>
-            </div>
-            <div class="card-body">
-              <?php
-              // Query to get instructor's specialities
-              $specialityQuery = "
-                SELECT l.license_name, l.license_type, l.description 
-                FROM specialities s
-                JOIN licenses l ON s.license_id = l.license_id
-                WHERE s.instructor_id = ?
-              ";
-              $specialityStmt = $conn->prepare($specialityQuery);
-              $specialityStmt->bind_param("s", $instructor['instructor_id']);
-              $specialityStmt->execute();
-              $specialityResult = $specialityStmt->get_result();
-
-              if ($specialityResult->num_rows > 0) {
-                echo '<ul>';
-                while ($speciality = $specialityResult->fetch_assoc()) {
-                  echo '<li><strong>' . htmlspecialchars($speciality['license_name']) . '</strong> (' . htmlspecialchars($speciality['license_type']) . ')<br>';
-                  echo '<small>' . htmlspecialchars($speciality['description']) . '</small></li>';
-                }
-                echo '</ul>';
-              } else {
-                echo '<p>No specialities found for this instructor.</p>';
-              }
-              $specialityStmt->close();
-              ?>
-            </div>
-          </div>
         </div>
       </div>
       
