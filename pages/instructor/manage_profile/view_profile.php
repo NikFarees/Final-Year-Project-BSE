@@ -17,7 +17,7 @@ $user_id = $_SESSION['user_id'];
 
     <!-- Breadcrumbs -->
     <div class="page-header">
-      <h4 class="page-title">Instructor Profile</h4>
+      <h4 class="page-title">Profile</h4>
       <ul class="breadcrumbs">
         <li class="nav-home">
           <a href="/pages/instructor/dashboard.php">
@@ -28,7 +28,7 @@ $user_id = $_SESSION['user_id'];
           <i class="icon-arrow-right"></i>
         </li>
         <li class="nav-item">
-          <a href="#">Profile</a>
+          <a href="#">My Profile</a>
         </li>
       </ul>
     </div>

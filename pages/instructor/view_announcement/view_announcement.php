@@ -41,7 +41,7 @@ $result = $stmt->get_result();
       <h4 class="page-title">Announcement</h4>
       <ul class="breadcrumbs">
         <li class="nav-home">
-          <a href="/pages/student/dashboard.php">
+          <a href="/pages/instructor/dashboard.php">
             <i class="icon-home"></i>
           </a>
         </li>
@@ -49,7 +49,7 @@ $result = $stmt->get_result();
           <i class="icon-arrow-right"></i>
         </li>
         <li class="nav-item">
-          <a href="#">View Announcement</a>
+          <a href="#">Announcement List</a>
         </li>
       </ul>
     </div>
@@ -58,7 +58,7 @@ $result = $stmt->get_result();
     <div class="page-category">
       <div class="card">
         <div class="card-header">
-          <h4 class="card-title">Announcements</h4>
+          <h4 class="card-title">Announcement List</h4>
         </div>
         <div class="card-body">
           <?php

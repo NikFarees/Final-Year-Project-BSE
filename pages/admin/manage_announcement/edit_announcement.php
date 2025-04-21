@@ -97,7 +97,7 @@ if (!empty($errors)) {
 
         <!-- Breadcrumbs -->
         <div class="page-header">
-            <h4 class="page-title">Manage Announcements</h4>
+            <h4 class="page-title">Announcement</h4>
             <ul class="breadcrumbs">
                 <li class="nav-home">
                     <a href="/pages/admin/dashboard.php">

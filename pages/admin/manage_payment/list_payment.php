@@ -95,7 +95,7 @@ $refundRequestsResult = $conn->query($refundRequestsQuery);
                       <table id="payments-table" class="table table-bordered table-striped table-hover">
                         <thead>
                           <tr>
-                            <th>Payment ID</th>
+                            <th>#</th>
                             <th>Student Name</th>
                             <th>Payment Type</th>
                             <th>Payment Method</th>
@@ -107,19 +107,20 @@ $refundRequestsResult = $conn->query($refundRequestsQuery);
                         <tbody>
                           <?php
                           if ($paymentsResult->num_rows > 0) {
+                            $counter = 1; // Initialize counter
                             while ($row = $paymentsResult->fetch_assoc()) {
-                              echo "<tr class='clickable-row' data-href='view_payment.php?id=" . $row['payment_id'] . "'>";
-                              echo "<td>" . $row['payment_id'] . "</td>";
-                              echo "<td>" . $row['student_name'] . "</td>";
-                              echo "<td>" . $row['payment_type'] . "</td>";
-                              echo "<td>" . $row['payment_method'] . "</td>";
-                              echo "<td>" . $row['total_amount'] . "</td>";
-                              echo "<td>" . $row['payment_datetime'] . "</td>";
-                              echo "<td>" . $row['payment_status'] . "</td>";
+                              echo "<tr class='clickable-row' data-href='view_payment.php?id=" . htmlspecialchars($row['payment_id']) . "'>";
+                              echo "<td>" . $counter++ . "</td>"; // Counter column
+                              echo "<td>" . htmlspecialchars($row['student_name']) . "</td>";
+                              echo "<td>" . htmlspecialchars($row['payment_type']) . "</td>";
+                              echo "<td>" . htmlspecialchars($row['payment_method']) . "</td>";
+                              echo "<td>" . htmlspecialchars($row['total_amount']) . "</td>";
+                              echo "<td>" . htmlspecialchars($row['payment_datetime']) . "</td>";
+                              echo "<td>" . htmlspecialchars($row['payment_status']) . "</td>";
                               echo "</tr>";
                             }
                           } else {
-                            echo "<tr><td colspan='7'>No payments found.</td></tr>";
+                            echo "<tr><td colspan='8'>No payments found.</td></tr>";
                           }
                           ?>
                         </tbody>
@@ -137,7 +138,7 @@ $refundRequestsResult = $conn->query($refundRequestsQuery);
                       <table id="refunds-table" class="table table-bordered">
                         <thead>
                           <tr>
-                            <th>Refund Request ID</th>
+                            <th>#</th>
                             <th>Payment ID</th>
                             <th>Student Name</th>
                             <th>Request Date</th>
@@ -148,18 +149,19 @@ $refundRequestsResult = $conn->query($refundRequestsQuery);
                         <tbody>
                           <?php
                           if ($refundRequestsResult->num_rows > 0) {
+                            $counter = 1; // Initialize counter
                             while ($row = $refundRequestsResult->fetch_assoc()) {
                               echo "<tr>";
-                              echo "<td>" . $row['refund_request_id'] . "</td>";
-                              echo "<td>" . $row['payment_id'] . "</td>";
-                              echo "<td>" . $row['student_name'] . "</td>";
-                              echo "<td>" . $row['request_datetime'] . "</td>";
-                              echo "<td>" . $row['reason'] . "</td>";
-                              echo "<td>" . $row['status'] . "</td>";
+                              echo "<td>" . $counter++ . "</td>"; // Counter column
+                              echo "<td>" . htmlspecialchars($row['payment_id']) . "</td>";
+                              echo "<td>" . htmlspecialchars($row['student_name']) . "</td>";
+                              echo "<td>" . htmlspecialchars($row['request_datetime']) . "</td>";
+                              echo "<td>" . htmlspecialchars($row['reason']) . "</td>";
+                              echo "<td>" . htmlspecialchars($row['status']) . "</td>";
                               echo "</tr>";
                             }
                           } else {
-                            echo "<tr><td colspan='6'>No refund requests found.</td></tr>";
+                            echo "<tr><td colspan='7'>No refund requests found.</td></tr>";
                           }
                           ?>
                         </tbody>
@@ -168,6 +170,7 @@ $refundRequestsResult = $conn->query($refundRequestsQuery);
                   </div>
                 </div>
               </div>
+
             </div>
           </div>
         </div>

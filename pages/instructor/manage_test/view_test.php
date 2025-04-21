@@ -72,7 +72,7 @@ if ($test_session_id) {
 
     <!-- Breadcrumbs -->
     <div class="page-header">
-      <h4 class="page-title">Test Session Details</h4>
+      <h4 class="page-title">Manage Test</h4>
       <ul class="breadcrumbs">
         <li class="nav-home">
           <a href="/pages/instructor/dashboard.php">
@@ -103,7 +103,7 @@ if ($test_session_id) {
       <?php else: ?>
         <div class="card">
           <div class="card-header">
-            <h3 class="card-title">Test Session Details - <?php echo htmlspecialchars($test_session['test_session_id']); ?></h3>
+            <h3 class="card-title">Test Session Details</h3>
           </div>
           <div class="card-body">
             <div class="row">
@@ -132,7 +132,7 @@ if ($test_session_id) {
               <table class="table table-bordered table-striped">
                 <thead>
                   <tr>
-                    <th>Student ID</th>
+                    <th>#</th>
                     <th>Name</th>
                     <th>Attendance</th>
                     <th>Score</th>
@@ -142,9 +142,10 @@ if ($test_session_id) {
                   </tr>
                 </thead>
                 <tbody>
+                  <?php $counter = 1; ?>
                   <?php while ($student = $student_list_result->fetch_assoc()): ?>
                     <tr>
-                      <td><?php echo htmlspecialchars($student['student_id']); ?></td>
+                      <td><?php echo $counter++; ?></td> <!-- Display counter instead of student_id -->
                       <td><?php echo htmlspecialchars($student['student_name']); ?></td>
                       <td>
                         <span class="badge <?php echo $student['attendance_status'] === 'Attend' ? 'badge-success' : 'badge-danger'; ?>">
@@ -155,15 +156,15 @@ if ($test_session_id) {
                       <td><?php echo htmlspecialchars($student['comment'] ?? '-'); ?></td>
                       <td>
                         <span class="badge 
-                        <?php
-                        echo $student['test_status'] === 'Passed' ? 'badge-success' : ($student['test_status'] === 'Failed' ? 'badge-danger' : ($student['test_status'] === 'Pending' ? 'badge-warning' : 'badge-secondary'));
-                        ?>">
+                          <?php
+                                  echo $student['test_status'] === 'Passed' ? 'badge-success' : ($student['test_status'] === 'Failed' ? 'badge-danger' : ($student['test_status'] === 'Pending' ? 'badge-warning' : 'badge-secondary'));
+                          ?>">
                           <?php echo htmlspecialchars($student['test_status']); ?>
                         </span>
                       </td>
                       <td>
                         <button class="btn btn-warning btn-sm mark-attendance"
-                          data-session-id="<?php echo htmlspecialchars($student['student_test_session_id']); ?>"
+                          data-session-id="<?php echo htmlspecialchars($student['student_test_session_id']); ?>" 
                           data-current-status="<?php echo htmlspecialchars($student['attendance_status']); ?>">
                           Mark Attendance
                         </button>
@@ -173,9 +174,7 @@ if ($test_session_id) {
                   <?php endwhile; ?>
                 </tbody>
               </table>
-
             </div>
-
           </div>
         </div>
       <?php endif; ?>

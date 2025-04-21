@@ -82,7 +82,7 @@ $paymentDetailsResult = $stmt->get_result();
 
         <!-- Breadcrumbs -->
         <div class="page-header">
-            <h4 class="page-title">Payment Detail</h4>
+            <h4 class="page-title">Manage Payment</h4>
             <ul class="breadcrumbs">
                 <li class="nav-home">
                     <a href="/pages/admin/dashboard.php">
@@ -93,7 +93,7 @@ $paymentDetailsResult = $stmt->get_result();
                     <i class="icon-arrow-right"></i>
                 </li>
                 <li class="nav-item">
-                    <a href="/pages/admin/manage_payment/list_payment.php">Payment List</a>
+                    <a href="/pages/admin/manage_payment/list_payment.php">Payment & Refund Request List</a>
                 </li>
                 <li class="separator">
                     <i class="icon-arrow-right"></i>

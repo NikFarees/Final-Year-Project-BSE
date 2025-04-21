@@ -80,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     <!-- Breadcrumbs -->
     <div class="page-header">
-      <h4 class="page-title">Edit Profile</h4>
+      <h4 class="page-title">Profile</h4>
       <ul class="breadcrumbs">
         <li class="nav-home">
           <a href="/pages/student/dashboard.php">
@@ -91,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
           <i class="icon-arrow-right"></i>
         </li>
         <li class="nav-item">
-          <a href="/pages/student/manage_profile/view_profile.php">Profile</a>
+          <a href="/pages/student/manage_profile/view_profile.php">My Profile</a>
         </li>
         <li class="separator">
           <i class="icon-arrow-right"></i>

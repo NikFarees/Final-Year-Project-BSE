@@ -42,7 +42,7 @@ $total_fees = $license_fee + $lesson_fee + $test_fees;
 
         <!-- Breadcrumbs -->
         <div class="page-header">
-            <h4 class="page-title">Dashboard</h4>
+            <h4 class="page-title">Book License</h4>
             <ul class="breadcrumbs">
                 <li class="nav-home">
                     <a href="/pages/student/dashboard.php">

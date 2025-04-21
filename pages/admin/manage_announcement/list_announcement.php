@@ -32,7 +32,7 @@ $result = $conn->query($query);
 
         <!-- Breadcrumbs -->
         <div class="page-header">
-            <h4 class="page-title">Dashboard</h4>
+            <h4 class="page-title">Announcement</h4>
             <ul class="breadcrumbs">
                 <li class="nav-home">
                     <a href="/pages/admin/dashboard.php">
@@ -43,7 +43,7 @@ $result = $conn->query($query);
                     <i class="icon-arrow-right"></i>
                 </li>
                 <li class="nav-item">
-                    <a href="#">List Announcement</a>
+                    <a href="#">Announcement List</a>
                 </li>
             </ul>
         </div>
@@ -53,7 +53,7 @@ $result = $conn->query($query);
             
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h4 class="card-title">Announcements</h4>
+                    <h4 class="card-title">Announcement List</h4>
                     <div class="ms-md-auto py-2 py-md-0">
                         <a href="add_announcement.php" class="btn btn-primary btn-round">Create Announcement</a>
                     </div>

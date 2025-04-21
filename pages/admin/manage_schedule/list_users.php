@@ -53,7 +53,7 @@ $student_result = $conn->query($student_query);
       <div class="col-md-12">
         <div class="card">
           <div class="card-header">
-            <h4 class="card-title">Instructor & Student List</h4>
+            <h4 class="card-title">User List</h4>
           </div>
           <div class="card-body">
             <ul class="nav nav-tabs nav-line nav-color-secondary" id="line-tab" role="tablist">
@@ -74,6 +74,7 @@ $student_result = $conn->query($student_query);
                       <table id="instructors-table" class="table table-striped table-bordered table-hover">
                         <thead>
                           <tr>
+                            <th>#</th>
                             <th>Instructor ID</th>
                             <th>Name</th>
                           </tr>
@@ -81,14 +82,16 @@ $student_result = $conn->query($student_query);
                         <tbody>
                           <?php
                           if ($instructor_result->num_rows > 0) {
+                            $counter = 1; // Initialize counter
                             while ($instructor = $instructor_result->fetch_assoc()) {
                               echo "<tr class='clickable-row' data-href='view_schedule_instructor.php?id=" . htmlspecialchars($instructor['instructor_id']) . "'>";
+                              echo "<td>" . $counter++ . "</td>"; // Counter column
                               echo "<td>" . htmlspecialchars($instructor['instructor_id']) . "</td>";
                               echo "<td>" . htmlspecialchars($instructor['name']) . "</td>";
                               echo "</tr>";
                             }
                           } else {
-                            echo "<tr><td colspan='2' class='text-center'>No instructors found.</td></tr>";
+                            echo "<tr><td colspan='3' class='text-center'>No instructors found.</td></tr>";
                           }
                           ?>
                         </tbody>
@@ -106,6 +109,7 @@ $student_result = $conn->query($student_query);
                       <table id="students-table" class="table table-striped table-bordered table-hover">
                         <thead>
                           <tr>
+                            <th>#</th>
                             <th>Student ID</th>
                             <th>Name</th>
                           </tr>
@@ -113,14 +117,16 @@ $student_result = $conn->query($student_query);
                         <tbody>
                           <?php
                           if ($student_result->num_rows > 0) {
+                            $counter = 1; // Initialize counter
                             while ($student = $student_result->fetch_assoc()) {
                               echo "<tr class='clickable-row' data-href='view_schedule_student.php?id=" . htmlspecialchars($student['student_id']) . "'>";
+                              echo "<td>" . $counter++ . "</td>"; // Counter column
                               echo "<td>" . htmlspecialchars($student['student_id']) . "</td>";
                               echo "<td>" . htmlspecialchars($student['name']) . "</td>";
                               echo "</tr>";
                             }
                           } else {
-                            echo "<tr><td colspan='2' class='text-center'>No students found.</td></tr>";
+                            echo "<tr><td colspan='3' class='text-center'>No students found.</td></tr>";
                           }
                           ?>
                         </tbody>

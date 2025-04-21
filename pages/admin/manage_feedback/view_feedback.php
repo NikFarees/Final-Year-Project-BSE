@@ -127,15 +127,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <div class="page-inner">
         <!-- Breadcrumbs -->
         <div class="page-header">
-            <h4 class="page-title">Feedback Details</h4>
+            <h4 class="page-title">Manage Feedback</h4>
             <ul class="breadcrumbs">
                 <li class="nav-home">
                     <a href="/pages/admin/dashboard.php"><i class="icon-home"></i></a>
                 </li>
-                <li class="separator"><i class="icon-arrow-right"></i></li>
-                <li class="nav-item"><a href="/pages/admin/manage_feedback/list_feedback.php">Feedback List</a></li>
-                <li class="separator"><i class="icon-arrow-right"></i></li>
-                <li class="nav-item"><a href="#">View Feedback</a></li>
+                <li class="separator">
+                    <i class="icon-arrow-right"></i>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/manage_feedback/list_feedback.php">Feedback List</a>
+                </li>
+                <li class="separator">
+                    <i class="icon-arrow-right"></i>
+                </li>
+                <li class="nav-item">
+                    <a href="#">View Feedback</a>
+                </li>
             </ul>
         </div>
 

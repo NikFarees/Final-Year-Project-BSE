@@ -41,7 +41,7 @@ $student = $result->fetch_assoc();
 
     <!-- Breadcrumbs -->
     <div class="page-header">
-      <h4 class="page-title">Student Detail</h4>
+      <h4 class="page-title">Manage User</h4>
       <ul class="breadcrumbs">
         <li class="nav-home">
           <a href="/pages/admin/dashboard.php">

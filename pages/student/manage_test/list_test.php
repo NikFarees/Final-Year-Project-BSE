@@ -77,7 +77,7 @@ if ($user_id) {
 <div class="container">
   <div class="page-inner">
     <div class="page-header">
-      <h4 class="page-title">My Test Sessions</h4>
+      <h4 class="page-title">My Test</h4>
       <ul class="breadcrumbs">
         <li class="nav-home">
           <a href="/pages/student/dashboard.php">
@@ -95,7 +95,7 @@ if ($user_id) {
       <?php else: ?>
         <div class="card">
           <div class="card-header">
-            <h3 class="card-title">Test Sessions</h3>
+            <h3 class="card-title">Test List</h3>
           </div>
           <div class="card-body">
             <ul class="nav nav-tabs nav-line nav-color-secondary" id="line-tab" role="tablist">
@@ -114,7 +114,7 @@ if ($user_id) {
                   <table id="upcoming-tests-table" class="table table-bordered table-striped table-hover">
                     <thead>
                       <tr>
-                        <th>ID</th>
+                        <th>#</th>
                         <th>Name</th>
                         <th>Date</th>
                         <th>Start</th>
@@ -123,10 +123,11 @@ if ($user_id) {
                       </tr>
                     </thead>
                     <tbody>
+                      <?php $counter = 1; ?>
                       <?php if ($upcoming_result->num_rows > 0): ?>
                         <?php while ($row = $upcoming_result->fetch_assoc()): ?>
                           <tr class="clickable-row" data-href="view_test.php?test_session_id=<?= $row['test_session_id'] ?>">
-                            <td><?= htmlspecialchars($row['test_session_id']) ?></td>
+                            <td><?= $counter++ ?></td>
                             <td><?= htmlspecialchars($row['test_name']) ?></td>
                             <td><?= htmlspecialchars($row['test_date']) ?></td>
                             <td><?= htmlspecialchars($row['start_time']) ?></td>
@@ -150,7 +151,7 @@ if ($user_id) {
                   <table id="past-tests-table" class="table table-bordered table-striped table-hover">
                     <thead>
                       <tr>
-                        <th>ID</th>
+                        <th>#</th>
                         <th>Name</th>
                         <th>Date</th>
                         <th>Start</th>
@@ -159,10 +160,11 @@ if ($user_id) {
                       </tr>
                     </thead>
                     <tbody>
+                      <?php $counter = 1; ?>
                       <?php if ($past_result->num_rows > 0): ?>
                         <?php while ($row = $past_result->fetch_assoc()): ?>
                           <tr class="clickable-row" data-href="view_test.php?test_session_id=<?= $row['test_session_id'] ?>">
-                            <td><?= htmlspecialchars($row['test_session_id']) ?></td>
+                            <td><?= $counter++ ?></td>
                             <td><?= htmlspecialchars($row['test_name']) ?></td>
                             <td><?= htmlspecialchars($row['test_date']) ?></td>
                             <td><?= htmlspecialchars($row['start_time']) ?></td>

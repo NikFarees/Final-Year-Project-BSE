@@ -88,7 +88,7 @@ ob_end_flush(); // Flush the output buffer
 
         <!-- Breadcrumbs -->
         <div class="page-header">
-            <h4 class="page-title">Dashboard</h4>
+            <h4 class="page-title">Announcement</h4>
             <ul class="breadcrumbs">
                 <li class="nav-home">
                     <a href="/pages/admin/dashboard.php">
@@ -99,7 +99,7 @@ ob_end_flush(); // Flush the output buffer
                     <i class="icon-arrow-right"></i>
                 </li>
                 <li class="nav-item">
-                    <a href="/pages/admin/manage_announcement/list_announcement.php">List Announcement</a>
+                    <a href="/pages/admin/manage_announcement/list_announcement.php">Announcement List</a>
                 </li>
                 <li class="separator">
                     <i class="icon-arrow-right"></i>

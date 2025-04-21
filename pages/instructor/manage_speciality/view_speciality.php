@@ -53,14 +53,14 @@ if ($result->num_rows > 0) {
     <div class="page-category">
       <div class="card">
         <div class="card-header">
-          <div class="card-title">License Specialities</div>
+          <div class="card-title">Speciality List</div>
         </div>
         <div class="card-body">
           <div class="table-responsive">
             <table id="specialities-table" class="table table-bordered table-striped">
               <thead>
                 <tr>
-                  <th>License Code</th>
+                  <th>#</th>
                   <th>License Name</th>
                   <th>Type</th>
                   <th>Description</th>
@@ -79,10 +79,11 @@ if ($result->num_rows > 0) {
                 $specialities = $stmt->get_result();
 
                 if ($specialities->num_rows > 0) {
+                    $counter = 1; // Initialize counter
                     while ($row = $specialities->fetch_assoc()) {
                         ?>
                         <tr>
-                          <td><?php echo htmlspecialchars($row['license_id']); ?></td>
+                          <td><?php echo $counter++; ?></td> <!-- Display counter instead of license_id -->
                           <td><?php echo htmlspecialchars($row['license_name']); ?></td>
                           <td>
                             <?php if ($row['license_type'] == 'Auto'): ?>

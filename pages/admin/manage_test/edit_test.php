@@ -169,7 +169,7 @@ $instructors_result = mysqli_query($conn, $instructors_query);
 
     <!-- Breadcrumbs -->
     <div class="page-header">
-      <h4 class="page-title">Edit Test</h4>
+      <h4 class="page-title">Manage Test</h4>
       <ul class="breadcrumbs">
         <li class="nav-home">
           <a href="/pages/admin/dashboard.php">

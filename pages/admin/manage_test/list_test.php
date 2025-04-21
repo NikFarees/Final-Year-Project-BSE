@@ -155,6 +155,7 @@ $eligibilityStudentsResult = fetchEligibilityStudents($conn);
                 <table id="upcoming-tests-table" class="table table-bordered table-striped table-hover">
                   <thead>
                     <tr>
+                      <th>#</th>
                       <th>Test Name</th>
                       <th>Date</th>
                       <th>Start Time</th>
@@ -167,8 +168,10 @@ $eligibilityStudentsResult = fetchEligibilityStudents($conn);
                   <tbody>
                     <?php
                     if (mysqli_num_rows($upcomingTestsResult) > 0) {
+                      $counter = 1; // Initialize counter
                       while ($row = mysqli_fetch_assoc($upcomingTestsResult)) {
                         echo "<tr class='clickable-row' data-href='edit_test.php?test_session_id=" . htmlspecialchars($row['test_session_id']) . "'>
+                              <td>" . $counter++ . "</td> <!-- Counter column -->
                               <td>" . htmlspecialchars($row['test_name']) . "</td>
                               <td>" . htmlspecialchars($row['test_date']) . "</td>
                               <td>" . htmlspecialchars($row['start_time']) . "</td>
@@ -179,7 +182,7 @@ $eligibilityStudentsResult = fetchEligibilityStudents($conn);
                             </tr>";
                       }
                     } else {
-                      echo "<tr><td colspan='7'>No upcoming tests found.</td></tr>";
+                      echo "<tr><td colspan='8'>No upcoming tests found.</td></tr>";
                     }
                     ?>
                   </tbody>
@@ -193,6 +196,7 @@ $eligibilityStudentsResult = fetchEligibilityStudents($conn);
                 <table id="past-tests-table" class="table table-bordered table-striped table-hover">
                   <thead>
                     <tr>
+                      <th>#</th>
                       <th>Test Name</th>
                       <th>Date</th>
                       <th>Start Time</th>
@@ -205,19 +209,21 @@ $eligibilityStudentsResult = fetchEligibilityStudents($conn);
                   <tbody>
                     <?php
                     if (mysqli_num_rows($pastTestsResult) > 0) {
+                      $counter = 1; // Initialize counter
                       while ($row = mysqli_fetch_assoc($pastTestsResult)) {
                         echo "<tr>
-                                <td>{$row['test_name']}</td>
-                                <td>{$row['test_date']}</td>
-                                <td>{$row['start_time']}</td>
-                                <td>{$row['end_time']}</td>
-                                <td>{$row['capacity_students']}</td>
-                                <td>{$row['enrolled_count']}</td>
-                                <td>{$row['status']}</td>
+                                <td>" . $counter++ . "</td> <!-- Counter column -->
+                                <td>" . htmlspecialchars($row['test_name']) . "</td>
+                                <td>" . htmlspecialchars($row['test_date']) . "</td>
+                                <td>" . htmlspecialchars($row['start_time']) . "</td>
+                                <td>" . htmlspecialchars($row['end_time']) . "</td>
+                                <td>" . htmlspecialchars($row['capacity_students']) . "</td>
+                                <td>" . htmlspecialchars($row['enrolled_count']) . "</td>
+                                <td>" . htmlspecialchars($row['status']) . "</td>
                               </tr>";
                       }
                     } else {
-                      echo "<tr><td colspan='7'>No past tests found.</td></tr>";
+                      echo "<tr><td colspan='8'>No past tests found.</td></tr>";
                     }
                     ?>
                   </tbody>
@@ -231,6 +237,7 @@ $eligibilityStudentsResult = fetchEligibilityStudents($conn);
                 <table id="eligibility-table" class="table table-bordered table-striped">
                   <thead>
                     <tr>
+                      <th>#</th>
                       <th>Student Name</th>
                       <th>Test Name</th>
                       <th>License Name</th>
@@ -239,15 +246,17 @@ $eligibilityStudentsResult = fetchEligibilityStudents($conn);
                   <tbody>
                     <?php
                     if (mysqli_num_rows($eligibilityStudentsResult) > 0) {
+                      $counter = 1; // Initialize counter
                       while ($row = mysqli_fetch_assoc($eligibilityStudentsResult)) {
                         echo "<tr>
-                                <td>{$row['student_name']}</td>
-                                <td>{$row['test_name']}</td>
-                                <td>{$row['license_name']}</td>
+                                <td>" . $counter++ . "</td> <!-- Counter column -->
+                                <td>" . htmlspecialchars($row['student_name']) . "</td>
+                                <td>" . htmlspecialchars($row['test_name']) . "</td>
+                                <td>" . htmlspecialchars($row['license_name']) . "</td>
                               </tr>";
                       }
                     } else {
-                      echo "<tr><td colspan='3'>No eligible students found.</td></tr>";
+                      echo "<tr><td colspan='4'>No eligible students found.</td></tr>";
                     }
                     ?>
                   </tbody>

@@ -109,7 +109,7 @@ $resolved_feedback = $stmt->get_result();
                                     <table id="pending-table" class="table table-bordered table-striped">
                                         <thead>
                                             <tr>
-                                                <th>Feedback ID</th>
+                                            <th>#</th>
                                                 <th>Category</th>
                                                 <th>Description</th>
                                                 <th>Target</th>
@@ -118,9 +118,10 @@ $resolved_feedback = $stmt->get_result();
                                         </thead>
                                         <tbody>
                                             <?php if ($pending_feedback->num_rows > 0): ?>
+                                                <?php $counter = 1; ?>
                                                 <?php while ($row = $pending_feedback->fetch_assoc()): ?>
                                                     <tr>
-                                                        <td><?= htmlspecialchars($row['feedback_id']) ?></td>
+                                                        <td><?= $counter++ ?></td>
                                                         <td><?= htmlspecialchars($row['feedback_name']) ?></td>
                                                         <td><?= nl2br(htmlspecialchars($row['description'])) ?></td>
                                                         <td><?= $row['target_name'] ? htmlspecialchars($row['target_name']) : '-' ?></td>
@@ -143,7 +144,7 @@ $resolved_feedback = $stmt->get_result();
                                     <table id="resolved-table" class="table table-bordered table-striped table-hover">
                                         <thead>
                                             <tr>
-                                                <th>Feedback ID</th>
+                                                <th>#</th>
                                                 <th>Category</th>
                                                 <th>Target</th>
                                                 <th>Submitted</th>
@@ -152,9 +153,10 @@ $resolved_feedback = $stmt->get_result();
                                         </thead>
                                         <tbody>
                                             <?php if ($resolved_feedback->num_rows > 0): ?>
+                                                <?php $counter = 1; ?>
                                                 <?php while ($row = $resolved_feedback->fetch_assoc()): ?>
                                                     <tr>
-                                                        <td><?= htmlspecialchars($row['feedback_id']) ?></td>
+                                                        <td><?= $counter++ ?></t>
                                                         <td><?= htmlspecialchars($row['feedback_name']) ?></td>
                                                         <td><?= $row['target_name'] ? htmlspecialchars($row['target_name']) : '-' ?></td>
                                                         <td><?= date("d M Y, H:i", strtotime($row['submitted_at'])) ?></td>
@@ -178,7 +180,6 @@ $resolved_feedback = $stmt->get_result();
                                 </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>

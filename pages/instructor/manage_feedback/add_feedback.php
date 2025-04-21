@@ -17,7 +17,8 @@ $user_id = $_SESSION['user_id'];
 $categories = $conn->query("SELECT * FROM feedback_categories");
 
 // Function to generate feedback_id
-function generateFeedbackID($conn) {
+function generateFeedbackID($conn)
+{
     $prefix = "FB";
     $date = date("dmy"); // e.g., 160424
     $basePattern = $prefix . '%' . $date;
@@ -47,7 +48,6 @@ function generateFeedbackID($conn) {
         $check->execute();
         $check->store_result();
         $exists = $check->num_rows > 0;
-
     } while ($exists); // Retry if already exists
 
     return $feedback_id;
@@ -75,13 +75,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <div class="container">
     <div class="page-inner">
+
         <!-- Breadcrumbs -->
         <div class="page-header">
-            <h4 class="page-title">Submit Feedback</h4>
+            <h4 class="page-title">My Feedback</h4>
             <ul class="breadcrumbs">
-                <li class="nav-home"><a href="/pages/instructor/dashboard.php"><i class="icon-home"></i></a></li>
-                <li class="separator"><i class="icon-arrow-right"></i></li>
-                <li class="nav-item"><a href="#">Feedback</a></li>
+                <li class="nav-home">
+                    <a href="/pages/instructor/dashboard.php">
+                        <i class="icon-home"></i>
+                    </a>
+                </li>
+                <li class="separator">
+                    <i class="icon-arrow-right"></i>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/instructor/manage_feedback/list_feedback.php">Feedback List</a>
+                </li>
+                <li class="separator">
+                    <i class="icon-arrow-right"></i>
+                </li>
+                <li class="nav-item">
+                    <a href="#">Add Feedback</a>
+                </li>
             </ul>
         </div>
 
@@ -119,26 +134,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    <?php if (!empty($errors)): ?>
-        Swal.fire({
-            title: "Error!",
-            html: "<?php echo implode('<br>', $errors); ?>",
-            icon: "error",
-        });
-    <?php endif; ?>
+    document.addEventListener('DOMContentLoaded', function() {
+        <?php if (!empty($errors)): ?>
+            Swal.fire({
+                title: "Error!",
+                html: "<?php echo implode('<br>', $errors); ?>",
+                icon: "error",
+            });
+        <?php endif; ?>
 
-    <?php if (!empty($successMessage)): ?>
-        Swal.fire({
-            title: "Success!",
-            text: "<?php echo $successMessage; ?>",
-            icon: "success",
-            confirmButtonText: "OK"
-        }).then(() => {
-            window.location.href = 'list_feedback.php';
-        });
-    <?php endif; ?>
-});
+        <?php if (!empty($successMessage)): ?>
+            Swal.fire({
+                title: "Success!",
+                text: "<?php echo $successMessage; ?>",
+                icon: "success",
+                confirmButtonText: "OK"
+            }).then(() => {
+                window.location.href = 'list_feedback.php';
+            });
+        <?php endif; ?>
+    });
 </script>
 
 <?php include '../../../include/footer.html'; ?>

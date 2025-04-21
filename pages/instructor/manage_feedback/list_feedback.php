@@ -55,10 +55,16 @@ $resolved_feedback = $stmt->get_result();
             <h4 class="page-title">My Feedback</h4>
             <ul class="breadcrumbs">
                 <li class="nav-home">
-                    <a href="/pages/instructor/dashboard.php"><i class="icon-home"></i></a>
+                    <a href="/pages/instructor/dashboard.php">
+                        <i class="icon-home"></i>
+                    </a>
                 </li>
-                <li class="separator"><i class="icon-arrow-right"></i></li>
-                <li class="nav-item"><a href="#">Feedback List</a></li>
+                <li class="separator">
+                    <i class="icon-arrow-right"></i>
+                </li>
+                <li class="nav-item">
+                    <a href="#">Feedback List</a>
+                </li>
             </ul>
         </div>
 
@@ -66,7 +72,7 @@ $resolved_feedback = $stmt->get_result();
         <div class="page-category">
             <div class="col-md-12">
                 <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div class="card-header d-flex justify-content-between align-items-center">
                         <h4 class="card-title">Feedback List</h4>
                         <a href="add_feedback.php" class="btn btn-primary btn-round">Add Feedback</a>
                     </div>
@@ -87,7 +93,7 @@ $resolved_feedback = $stmt->get_result();
                                     <table id="pending-table" class="table table-bordered table-striped">
                                         <thead>
                                             <tr>
-                                                <th>Feedback ID</th>
+                                                <th>#</th>
                                                 <th>Category</th>
                                                 <th>Description</th>
                                                 <th>Submitted</th>
@@ -95,12 +101,13 @@ $resolved_feedback = $stmt->get_result();
                                         </thead>
                                         <tbody>
                                             <?php if ($pending_feedback->num_rows > 0): ?>
+                                                <?php $counter = 1; ?>
                                                 <?php while ($row = $pending_feedback->fetch_assoc()): ?>
                                                     <tr>
-                                                        <td><?= htmlspecialchars($row['feedback_id']) ?></td>
-                                                        <td><?= htmlspecialchars($row['feedback_name']) ?></td>
-                                                        <td><?= nl2br(htmlspecialchars($row['description'])) ?></td>
-                                                        <td><?= date("d M Y, H:i", strtotime($row['submitted_at'])) ?></td>
+                                                        <td><?= $counter++; ?></td> <!-- Display counter instead of feedback_id -->
+                                                        <td><?= htmlspecialchars($row['feedback_name']); ?></td>
+                                                        <td><?= nl2br(htmlspecialchars($row['description'])); ?></td>
+                                                        <td><?= date("d M Y, H:i", strtotime($row['submitted_at'])); ?></td>
                                                     </tr>
                                                 <?php endwhile; ?>
                                             <?php else: ?>
@@ -119,7 +126,7 @@ $resolved_feedback = $stmt->get_result();
                                     <table id="resolved-table" class="table table-bordered table-striped table-hover">
                                         <thead>
                                             <tr>
-                                                <th>Feedback ID</th>
+                                                <th>#</th>
                                                 <th>Category</th>
                                                 <th>Submitted</th>
                                                 <th>Reply</th>
@@ -127,15 +134,16 @@ $resolved_feedback = $stmt->get_result();
                                         </thead>
                                         <tbody>
                                             <?php if ($resolved_feedback->num_rows > 0): ?>
+                                                <?php $counter = 1; ?>
                                                 <?php while ($row = $resolved_feedback->fetch_assoc()): ?>
                                                     <tr>
-                                                        <td><?= htmlspecialchars($row['feedback_id']) ?></td>
-                                                        <td><?= htmlspecialchars($row['feedback_name']) ?></td>
-                                                        <td><?= date("d M Y, H:i", strtotime($row['submitted_at'])) ?></td>
+                                                        <td><?= $counter++; ?></td> <!-- Display counter instead of feedback_id -->
+                                                        <td><?= htmlspecialchars($row['feedback_name']); ?></td>
+                                                        <td><?= date("d M Y, H:i", strtotime($row['submitted_at'])); ?></td>
                                                         <td>
                                                             <?php if (!empty($row['reply_text'])): ?>
-                                                                <?= nl2br(htmlspecialchars($row['reply_text'])) ?><br>
-                                                                <small><em><?= date("d M Y, H:i", strtotime($row['reply_date'])) ?></em></small>
+                                                                <?= nl2br(htmlspecialchars($row['reply_text'])); ?><br>
+                                                                <small><em><?= date("d M Y, H:i", strtotime($row['reply_date'])); ?></em></small>
                                                             <?php else: ?>
                                                                 <em>No reply yet</em>
                                                             <?php endif; ?>

@@ -31,7 +31,6 @@ $result = $conn->query($sql);
         <!-- Inner page content -->
         <div class="page-category">
 
-
             <!-- Card Structure with Table -->
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
@@ -46,7 +45,7 @@ $result = $conn->query($sql);
                         <table id="basic-datatables" class="display table table-striped">
                             <thead>
                                 <tr>
-                                    <th>License ID</th>
+                                    <th>#</th>
                                     <th>License Name</th>
                                     <th>License Type</th>
                                     <th>Description</th>
@@ -57,16 +56,17 @@ $result = $conn->query($sql);
                             <tbody>
                                 <?php
                                 if ($result->num_rows > 0) {
+                                    $counter = 1; // Initialize counter
                                     while ($row = $result->fetch_assoc()) {
                                         echo "<tr>";
-                                        echo "<td>" . $row['license_id'] . "</td>";
-                                        echo "<td>" . $row['license_name'] . "</td>";
-                                        echo "<td>" . $row['license_type'] . "</td>";
-                                        echo "<td>" . ($row['description'] ? $row['description'] : "") . "</td>";
-                                        echo "<td>" . $row['license_fee'] . "</td>";
+                                        echo "<td>" . $counter++ . "</td>"; // Display counter instead of license_id
+                                        echo "<td>" . htmlspecialchars($row['license_name']) . "</td>";
+                                        echo "<td>" . htmlspecialchars($row['license_type']) . "</td>";
+                                        echo "<td>" . htmlspecialchars($row['description'] ?? "") . "</td>";
+                                        echo "<td>" . htmlspecialchars($row['license_fee']) . "</td>";
                                         echo "<td>";
-                                        echo "<a href='edit_license.php?id=" . $row['license_id'] . "' class='text-dark me-3'>Edit</a>";
-                                        echo "<a href='delete_license.php?id=" . $row['license_id'] . "' class='text-danger'>Delete</a>";
+                                        echo "<a href='edit_license.php?id=" . htmlspecialchars($row['license_id']) . "' class='text-dark me-3'>Edit</a>";
+                                        echo "<a href='delete_license.php?id=" . htmlspecialchars($row['license_id']) . "' class='text-danger'>Delete</a>";
                                         echo "</td>";
                                         echo "</tr>";
                                     }

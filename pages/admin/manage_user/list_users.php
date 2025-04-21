@@ -46,7 +46,7 @@ $student_result = $conn->query($student_query);
 
     <!-- Breadcrumbs -->
     <div class="page-header">
-      <h4 class="page-title">Manage Users</h4>
+      <h4 class="page-title">Manage User</h4>
       <ul class="breadcrumbs">
         <li class="nav-home">
           <a href="/pages/admin/dashboard.php">
@@ -67,10 +67,8 @@ $student_result = $conn->query($student_query);
       <div class="col-md-12">
         <div class="card">
           <div class="card-header d-flex justify-content-between align-items-center">
-            <h4 class="card-title">Instructor & Student List</h4>
-            <div id="dynamic-buttons">
-              <!-- Buttons will be dynamically displayed here -->
-            </div>
+            <h4 class="card-title">User List</h4>
+            <div id="dynamic-buttons"></div>
           </div>
           <div class="card-body">
             <ul class="nav nav-tabs nav-line nav-color-secondary" id="line-tab" role="tablist">
@@ -91,7 +89,7 @@ $student_result = $conn->query($student_query);
                       <table id="instructors-table" class="table table-striped table-bordered table-hover">
                         <thead>
                           <tr>
-                            <th>Instructor ID</th>
+                            <th>#</th>
                             <th>Name</th>
                             <th>Specialties</th>
                             <th>Actions</th>
@@ -100,9 +98,10 @@ $student_result = $conn->query($student_query);
                         <tbody>
                           <?php
                           if ($instructor_result->num_rows > 0) {
+                            $counter = 1; // Initialize counter
                             while ($instructor = $instructor_result->fetch_assoc()) {
                               echo "<tr class='clickable-row' data-href='view_instructor.php?id=" . $instructor['instructor_id'] . "'>";
-                              echo "<td>" . htmlspecialchars($instructor['instructor_id']) . "</td>";
+                              echo "<td>" . $counter++ . "</td>"; // Display counter instead of instructor_id
                               echo "<td>" . htmlspecialchars($instructor['name']) . "</td>";
                               echo "<td>" . (!empty($instructor['specialties']) ? htmlspecialchars($instructor['specialties']) : "None") . "</td>";
                               echo "<td>
@@ -130,7 +129,7 @@ $student_result = $conn->query($student_query);
                       <table id="students-table" class="table table-striped table-bordered table-hover">
                         <thead>
                           <tr>
-                            <th>Student ID</th>
+                            <th>#</th>
                             <th>Name</th>
                             <th>Licenses Enrolled</th>
                             <th>Actions</th>
@@ -139,9 +138,10 @@ $student_result = $conn->query($student_query);
                         <tbody>
                           <?php
                           if ($student_result->num_rows > 0) {
+                            $counter = 1; // Initialize counter
                             while ($student = $student_result->fetch_assoc()) {
                               echo "<tr class='clickable-row' data-href='view_student.php?id=" . $student['student_id'] . "'>";
-                              echo "<td>" . htmlspecialchars($student['student_id']) . "</td>";
+                              echo "<td>" . $counter++ . "</td>"; // Display counter instead of student_id
                               echo "<td>" . htmlspecialchars($student['name']) . "</td>";
                               echo "<td>" . (!empty($student['licenses_enrolled']) ? htmlspecialchars($student['licenses_enrolled']) : "None") . "</td>";
                               echo "<td>
@@ -166,7 +166,6 @@ $student_result = $conn->query($student_query);
         </div>
       </div>
     </div>
-
   </div>
 </div>
 

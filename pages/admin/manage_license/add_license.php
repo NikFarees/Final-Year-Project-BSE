@@ -49,7 +49,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <div class="page-inner">
         <!-- Breadcrumbs -->
         <div class="page-header">
-            <h4 class="page-title">Manage Instructor</h4>
+            <h4 class="page-title">Manage License</h4>
             <ul class="breadcrumbs">
                 <li class="nav-home">
                     <a href="/pages/admin/dashboard.php">

@@ -40,18 +40,12 @@ $notification_result = $stmt->get_result();
 
     <!-- Breadcrumbs -->
     <div class="page-header">
-      <h4 class="page-title">Instructor Dashboard</h4>
+      <h4 class="page-title">Dashboard</h4>
       <ul class="breadcrumbs">
         <li class="nav-home">
           <a href="#">
             <i class="icon-home"></i>
           </a>
-        </li>
-        <li class="separator">
-          <i class="icon-arrow-right"></i>
-        </li>
-        <li class="nav-item">
-          <a href="#">Dashboard</a>
         </li>
       </ul>
     </div>

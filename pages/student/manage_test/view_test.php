@@ -63,7 +63,7 @@ if (!isset($_GET['test_session_id']) || empty($_GET['test_session_id'])) {
 
         <!-- Breadcrumbs -->
         <div class="page-header">
-            <h4 class="page-title">Test Details</h4>
+            <h4 class="page-title">My Test</h4>
             <ul class="breadcrumbs">
                 <li class="nav-home">
                     <a href="/pages/student/dashboard.php">
@@ -74,13 +74,13 @@ if (!isset($_GET['test_session_id']) || empty($_GET['test_session_id'])) {
                     <i class="icon-arrow-right"></i>
                 </li>
                 <li class="nav-item">
-                    <a href="/pages/student/manage_test/list_test.php">Tests</a>
+                    <a href="/pages/student/manage_test/list_test.php">Test List</a>
                 </li>
                 <li class="separator">
                     <i class="icon-arrow-right"></i>
                 </li>
                 <li class="nav-item">
-                    <a href="#">Test Details</a>
+                    <a href="#">Test Detail</a>
                 </li>
             </ul>
         </div>

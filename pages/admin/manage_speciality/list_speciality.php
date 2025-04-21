@@ -41,8 +41,7 @@ $licenses_result = $conn->query($query);
         <div class="page-category">
             <div class="card">
                 <div class="card-header">
-                    <h4 class="card-title">Specialities</h4>
-                    <!-- Add button to assign new speciality -->
+                    <h4 class="card-title">Speciality List</h4>
                 </div>
                 <div class="card-body">
                     <ul class="nav nav-tabs nav-line nav-color-secondary" id="speciality-tab" role="tablist">
@@ -87,15 +86,17 @@ $licenses_result = $conn->query($query);
                                             <table class="table table-striped" id="basic-datatables-<?php echo $license['license_id']; ?>">
                                                 <thead>
                                                     <tr>
-                                                        <th>Speciality ID</th>
+                                                        <th>#</th>
                                                         <th>Instructor Name</th>
                                                         <th>Actions</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    <?php while ($speciality = $instructors_result->fetch_assoc()): ?>
+                                                    <?php 
+                                                    $counter = 1; // Initialize counter
+                                                    while ($speciality = $instructors_result->fetch_assoc()): ?>
                                                         <tr>
-                                                            <td><?php echo htmlspecialchars($speciality['speciality_id']); ?></td>
+                                                            <td><?php echo $counter++; ?></td> <!-- Display counter instead of speciality_id -->
                                                             <td><?php echo htmlspecialchars($speciality['instructor_name']); ?></td>
                                                             <td>
                                                                 <a href="delete_speciality.php?instructor_id=<?php echo htmlspecialchars($speciality['instructor_id']); ?>&license_id=<?php echo htmlspecialchars($license_id); ?>" class="text-danger">Delete</a>

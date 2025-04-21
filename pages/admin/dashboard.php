@@ -37,7 +37,7 @@ $instructor_count = $instructor_count_row['instructor_count'];
 
     <!-- Breadcrumbs -->
     <div class="page-header">
-      <h4 class="page-title">Dashboard Admin</h4>
+      <h4 class="page-title">Dashboard</h4>
       <ul class="breadcrumbs">
         <li class="nav-home">
           <a href="#">

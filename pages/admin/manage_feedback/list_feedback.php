@@ -30,9 +30,17 @@ $categories_result = $conn->query($categories_query);
         <div class="page-header">
             <h4 class="page-title">Manage Feedback</h4>
             <ul class="breadcrumbs">
-                <li class="nav-home"><a href="/pages/admin/dashboard.php"><i class="icon-home"></i></a></li>
-                <li class="separator"><i class="icon-arrow-right"></i></li>
-                <li class="nav-item"><a href="#">Feedback List</a></li>
+                <li class="nav-home">
+                    <a href="/pages/admin/dashboard.php">
+                        <i class="icon-home"></i>
+                    </a>
+                </li>
+                <li class="separator">
+                    <i class="icon-arrow-right"></i>
+                </li>
+                <li class="nav-item">
+                    <a href="#">Feedback List</a>
+                </li>
             </ul>
         </div>
 
@@ -41,7 +49,7 @@ $categories_result = $conn->query($categories_query);
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h4 class="card-title">User Feedback</h4>
+                        <h4 class="card-title">Feedback List</h4>
                         <div class="ms-md-auto py-2 py-md-0">
                             <a href="add_feedback_category.php" class="btn btn-primary btn-round">Add Feedback Categories</a>
                         </div>
@@ -66,7 +74,7 @@ $categories_result = $conn->query($categories_query);
                                     <table id="pending-table" class="table table-striped table-bordered table-hover">
                                         <thead>
                                             <tr>
-                                                <th>ID</th>
+                                                <th>#</th>
                                                 <th>Category</th>
                                                 <th>Sender</th>
                                                 <th>Target</th>
@@ -75,9 +83,10 @@ $categories_result = $conn->query($categories_query);
                                         </thead>
                                         <tbody>
                                             <?php if ($pending_feedback->num_rows > 0): ?>
+                                                <?php $counter = 1; ?>
                                                 <?php while ($row = $pending_feedback->fetch_assoc()): ?>
                                                     <tr class="clickable-row" data-href="view_feedback.php?feedback_id=<?= $row['feedback_id'] ?>">
-                                                        <td><?= $row['feedback_id'] ?></td>
+                                                        <td><?= $counter++ ?></td> <!-- Counter column -->
                                                         <td><?= htmlspecialchars($row['feedback_name']) ?></td>
                                                         <td><?= htmlspecialchars($row['sender_name']) ?></td>
                                                         <td><?= $row['target_name'] ? htmlspecialchars($row['target_name']) : 'General' ?></td>
@@ -100,7 +109,7 @@ $categories_result = $conn->query($categories_query);
                                     <table id="resolved-table" class="table table-striped table-bordered table-hover">
                                         <thead>
                                             <tr>
-                                                <th>ID</th>
+                                                <th>#</th>
                                                 <th>Category</th>
                                                 <th>Sender</th>
                                                 <th>Target</th>
@@ -109,9 +118,10 @@ $categories_result = $conn->query($categories_query);
                                         </thead>
                                         <tbody>
                                             <?php if ($resolved_feedback->num_rows > 0): ?>
+                                                <?php $counter = 1; ?>
                                                 <?php while ($row = $resolved_feedback->fetch_assoc()): ?>
                                                     <tr class="clickable-row" data-href="view_feedback.php?feedback_id=<?= $row['feedback_id'] ?>">
-                                                        <td><?= $row['feedback_id'] ?></td>
+                                                        <td><?= $counter++ ?></td> <!-- Counter column -->
                                                         <td><?= htmlspecialchars($row['feedback_name']) ?></td>
                                                         <td><?= htmlspecialchars($row['sender_name']) ?></td>
                                                         <td><?= $row['target_name'] ? htmlspecialchars($row['target_name']) : 'General' ?></td>
@@ -134,16 +144,17 @@ $categories_result = $conn->query($categories_query);
                                     <table id="categories-table" class="table table-striped table-bordered table-hover">
                                         <thead>
                                             <tr>
-                                                <th>ID</th>
+                                                <th>#</th>
                                                 <th>Category Name</th>
                                                 <th>Description</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <?php if ($categories_result->num_rows > 0): ?>
+                                                <?php $counter = 1; ?>
                                                 <?php while ($row = $categories_result->fetch_assoc()): ?>
                                                     <tr>
-                                                        <td><?= $row['feedback_category_id'] ?></td>
+                                                        <td><?= $counter++ ?></td> <!-- Counter column -->
                                                         <td><?= htmlspecialchars($row['feedback_name']) ?></td>
                                                         <td><?= htmlspecialchars($row['description']) ?></td>
                                                     </tr>

@@ -58,10 +58,10 @@ $refundRequestsResult = $refundRequestsStmt->get_result();
 
         <!-- Breadcrumbs -->
         <div class="page-header">
-            <h4 class="page-title">Manage Payment</h4>
+            <h4 class="page-title">My Payment</h4>
             <ul class="breadcrumbs">
                 <li class="nav-home">
-                    <a href="#">
+                    <a href="/pages/student/dashboard.php">
                         <i class="icon-home"></i>
                     </a>
                 </li>
@@ -69,7 +69,7 @@ $refundRequestsResult = $refundRequestsStmt->get_result();
                     <i class="icon-arrow-right"></i>
                 </li>
                 <li class="nav-item">
-                    <a href="#">Payment & Refund List</a>
+                    <a href="#">Payment & Refund Request List</a>
                 </li>
             </ul>
         </div>
@@ -101,7 +101,7 @@ $refundRequestsResult = $refundRequestsStmt->get_result();
                                     <table id="payments-table" class="table table-bordered table-striped table-hover">
                                         <thead>
                                             <tr>
-                                                <th>Payment ID</th>
+                                                <th>#</th>
                                                 <th>Payment Type</th>
                                                 <th>Payment Method</th>
                                                 <th>Total Amount</th>
@@ -112,9 +112,10 @@ $refundRequestsResult = $refundRequestsStmt->get_result();
                                         <tbody>
                                             <?php
                                             if ($paymentsResult->num_rows > 0) {
+                                                $counter = 1;
                                                 while ($row = $paymentsResult->fetch_assoc()) {
                                                     echo "<tr class='clickable-row' data-href='view_payment.php?id=" . $row['payment_id'] . "'>";
-                                                    echo "<td>" . $row['payment_id'] . "</td>";
+                                                    echo "<td>" . $counter++ . "</td>";
                                                     echo "<td>" . $row['payment_type'] . "</td>";
                                                     echo "<td>" . $row['payment_method'] . "</td>";
                                                     echo "<td>" . $row['total_amount'] . "</td>";
@@ -137,7 +138,7 @@ $refundRequestsResult = $refundRequestsStmt->get_result();
                                     <table id="refunds-table" class="table table-bordered table-striped table-hover">
                                         <thead>
                                             <tr>
-                                                <th>Refund Request ID</th>
+                                                <th>#</th>
                                                 <th>Payment ID</th>
                                                 <th>Request Date</th>
                                                 <th>Reason</th>
@@ -147,9 +148,10 @@ $refundRequestsResult = $refundRequestsStmt->get_result();
                                         <tbody>
                                             <?php
                                             if ($refundRequestsResult->num_rows > 0) {
+                                                $counter = 1;
                                                 while ($row = $refundRequestsResult->fetch_assoc()) {
                                                     echo "<tr class='clickable-row' data-href='view_refund.php?id=" . $row['refund_request_id'] . "'>";
-                                                    echo "<td>" . $row['refund_request_id'] . "</td>";
+                                                    echo "<td>" . $counter++ . "</td>";
                                                     echo "<td>" . $row['payment_id'] . "</td>";
                                                     echo "<td>" . $row['request_datetime'] . "</td>";
                                                     echo "<td>" . $row['reason'] . "</td>";

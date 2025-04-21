@@ -52,7 +52,7 @@ $licenseResult = $conn->query($licenseQuery);
 
     <!-- Breadcrumbs -->
     <div class="page-header">
-      <h4 class="page-title">Student Dashboard</h4>
+      <h4 class="page-title">Dashboard</h4>
       <ul class="breadcrumbs">
         <li class="nav-home">
           <a href="#">
@@ -64,12 +64,8 @@ $licenseResult = $conn->query($licenseQuery);
 
     <!-- Inner page content -->
     <div class="page-category">
-
       <!-- Row 2: Notifications -->
       <div class="row mb-4">
-
-
-
         <!-- Column 1: Available License Types (slider) -->
         <div class="col-md-8">
           <div class="card">
