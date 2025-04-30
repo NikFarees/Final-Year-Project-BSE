@@ -135,10 +135,10 @@ if (!empty($errors)) {
                     </div>
                     <div class="card-body">
                         <form method="POST" action="">
-                            <div class="form-group">
-                                <label for="instructor_id">Instructor</label>
+                            <div class="form-group" style="width: 50%; margin: 0 auto;">
+                                <label for="instructor_id" style="display: block; text-align: center;">Select an Instructor:</label>
                                 <select class="form-control" id="instructor_id" name="instructor_id" required>
-                                    <option value="">Select Instructor</option>
+                                    <option value="">--Select an Instructor--</option>
                                     <?php while ($instructor = $instructors->fetch_assoc()): ?>
                                         <option value="<?php echo $instructor['instructor_id']; ?>"><?php echo $instructor['name']; ?></option>
                                     <?php endwhile; ?>

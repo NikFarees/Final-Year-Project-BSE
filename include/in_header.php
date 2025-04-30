@@ -127,18 +127,18 @@ $conn->close();
             </li>
 
             <!-- Manage Student -->
-            <li class="nav-item <?php echo strpos($_SERVER['PHP_SELF'], '#') !== false ? 'active' : ''; ?>">
-              <a href="#">
+            <li class="nav-item <?php echo strpos($_SERVER['PHP_SELF'], '/pages/instructor/manage_student/') !== false ? 'active' : ''; ?>">
+              <a href="/pages/instructor/manage_student/list_student.php">
                 <i class="fas fa-layer-group"></i>
-                <p>Manage Student (X)</p>
+                <p>Manage Student</p>
               </a>
             </li>
 
-            <!-- Manage Attendance -->
-            <li class="nav-item <?php echo strpos($_SERVER['PHP_SELF'], '#') !== false ? 'active' : ''; ?>">
-              <a href="#">
+            <!-- Manage Lesson -->
+            <li class="nav-item <?php echo strpos($_SERVER['PHP_SELF'], '/pages/instructor/manage_lesson/') !== false ? 'active' : ''; ?>">
+              <a href="/pages/instructor/manage_lesson/list_lesson.php">
                 <i class="fas fa-layer-group"></i>
-                <p>Manage Attendance (X)</p>
+                <p>Manage Lesson</p>
               </a>
             </li>
 
@@ -151,10 +151,10 @@ $conn->close();
             </li>
 
             <!-- My Schedule -->
-            <li class="nav-item <?php echo strpos($_SERVER['PHP_SELF'], '#') !== false ? 'active' : ''; ?>">
-              <a href="#">
+            <li class="nav-item <?php echo strpos($_SERVER['PHP_SELF'], '/pages/instructor/manage_schedule/') !== false ? 'active' : ''; ?>">
+              <a href="/pages/instructor/manage_schedule/view_schedule.php">
                 <i class="fas fa-layer-group"></i>
-                <p>My Schedule (X)</p>
+                <p>My Schedule</p>
               </a>
             </li>
 
@@ -246,6 +246,8 @@ $conn->close();
                     <li>
                       <div class="dropdown-divider"></div>
                       <a class="dropdown-item" href="/pages/instructor/manage_profile/view_profile.php">Profile</a>
+                      <div class="dropdown-divider"></div>
+                      <a class="dropdown-item" href="/pages/instructor/manage_announcement/list_announcement.php">Announcement</a>
                       <div class="dropdown-divider"></div>
                       <a class="dropdown-item" href="/authentication/logout.php">Logout</a>
                     </li>

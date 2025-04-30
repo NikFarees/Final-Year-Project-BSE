@@ -94,6 +94,7 @@ CREATE TABLE student_lessons (
     start_time TIME, 
     end_time TIME, 
     status ENUM('Completed', 'Pending', 'Ineligible') DEFAULT 'Ineligible',
+    attendance_status ENUM('Attend', 'Absent') DEFAULT 'Absent',
     schedule_status ENUM('Assigned', 'Unassigned') DEFAULT 'Unassigned', 
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -261,14 +262,6 @@ CREATE TABLE refunds (
     refund_datetime DATETIME NOT NULL,
     status ENUM('Processed', 'Pending') DEFAULT 'Pending',
     FOREIGN KEY (refund_request_id) REFERENCES refund_requests(refund_request_id) ON DELETE CASCADE
-);
-
--- Attendance Table
-CREATE TABLE attendance (
-    attendance_id INT AUTO_INCREMENT PRIMARY KEY,
-    student_lesson_id VARCHAR(20) NOT NULL,
-    status ENUM('Present', 'Absent') DEFAULT 'Absent',
-    FOREIGN KEY (student_lesson_id) REFERENCES student_lessons(student_lesson_id) ON DELETE CASCADE
 );
 
 -- LessonChangeRequest Table

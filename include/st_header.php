@@ -143,10 +143,10 @@ $conn->close();
             </li>
 
             <!-- My Lesson -->
-            <li class="nav-item <?php echo strpos($_SERVER['PHP_SELF'], '#') !== false ? 'active' : ''; ?>">
-              <a href="#">
+            <li class="nav-item <?php echo strpos($_SERVER['PHP_SELF'], '/pages/student/manage_lesson/') !== false ? 'active' : ''; ?>">
+              <a href="/pages/student/manage_lesson/list_lesson.php">
                 <i class="fas fa-layer-group"></i>
-                <p>My Lesson (X)</p>
+                <p>My Lesson</p>
               </a>
             </li>
 
@@ -250,6 +250,8 @@ $conn->close();
                     <li>
                       <div class="dropdown-divider"></div>
                       <a class="dropdown-item" href="/pages/student/manage_profile/view_profile.php">Profile</a>
+                      <div class="dropdown-divider"></div>
+                      <a class="dropdown-item" href="/pages/student/manage_announcement/list_announcement.php">Announcement</a>
                       <div class="dropdown-divider"></div>
                       <a class="dropdown-item" href="/authentication/logout.php">Logout</a>
                     </li>

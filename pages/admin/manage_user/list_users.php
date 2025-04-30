@@ -20,6 +20,7 @@ $instructor_query = "
         i.instructor_id, u.name
 ";
 $instructor_result = $conn->query($instructor_query);
+$instructors = $instructor_result->fetch_all(MYSQLI_ASSOC);
 
 // Fetch student data
 $student_query = "
@@ -39,6 +40,7 @@ $student_query = "
         s.student_id, u.name
 ";
 $student_result = $conn->query($student_query);
+$students = $student_result->fetch_all(MYSQLI_ASSOC);
 ?>
 
 <div class="container">
@@ -67,100 +69,140 @@ $student_result = $conn->query($student_query);
       <div class="col-md-12">
         <div class="card">
           <div class="card-header d-flex justify-content-between align-items-center">
-            <h4 class="card-title">User List</h4>
-            <div id="dynamic-buttons"></div>
+            <div class="card-title">User List</div>
+            <!-- Dynamic button -->
+            <div class="d-flex align-items-center">
+              <div id="dynamic-button-container" class="mr-3">
+                <a href="add_instructor.php" class="btn btn-primary">Add Instructor</a>
+              </div>
+              <!-- Add minimize button -->
+              <button type="button" class="btn btn-sm btn-outline-secondary" id="user-toggle-btn">
+                <i class="fas fa-minus"></i>
+              </button>
+            </div>
           </div>
-          <div class="card-body">
-            <ul class="nav nav-tabs nav-line nav-color-secondary" id="line-tab" role="tablist">
-              <li class="nav-item">
-                <a class="nav-link active" id="line-instructors-tab" data-bs-toggle="pill" href="#line-instructors" role="tab" aria-controls="line-instructors" aria-selected="true">Instructor List</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" id="line-students-tab" data-bs-toggle="pill" href="#line-students" role="tab" aria-controls="line-students" aria-selected="false">Student List</a>
-              </li>
-            </ul>
-            <div class="tab-content mt-3 mb-3" id="line-tabContent">
-
-              <!-- Instructor List -->
-              <div class="tab-pane fade show active" id="line-instructors" role="tabpanel" aria-labelledby="line-instructors-tab">
-                <div class="card mt-4">
+          <div class="card-body" id="user-card-body">
+            <!-- Toggle Cards -->
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <div class="card card-stats card-round toggle-card active" data-target="instructors-table-container">
                   <div class="card-body">
-                    <div class="table-responsive">
-                      <table id="instructors-table" class="table table-striped table-bordered table-hover">
-                        <thead>
-                          <tr>
-                            <th>#</th>
-                            <th>Name</th>
-                            <th>Specialties</th>
-                            <th>Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <?php
-                          if ($instructor_result->num_rows > 0) {
-                            $counter = 1; // Initialize counter
-                            while ($instructor = $instructor_result->fetch_assoc()) {
-                              echo "<tr class='clickable-row' data-href='view_instructor.php?id=" . $instructor['instructor_id'] . "'>";
-                              echo "<td>" . $counter++ . "</td>"; // Display counter instead of instructor_id
-                              echo "<td>" . htmlspecialchars($instructor['name']) . "</td>";
-                              echo "<td>" . (!empty($instructor['specialties']) ? htmlspecialchars($instructor['specialties']) : "None") . "</td>";
-                              echo "<td>
-                                      <a href='edit_instructor.php?id=" . htmlspecialchars($instructor['instructor_id']) . "' class='text-dark me-3'>Edit</a>
-                                      <a href='delete_instructor.php?id=" . htmlspecialchars($instructor['instructor_id']) . "' class='text-danger'>Delete</a>
-                                    </td>";
-                              echo "</tr>";
-                            }
-                          } else {
-                            echo "<tr><td colspan='4' class='text-center'>No instructors found.</td></tr>";
-                          }
-                          ?>
-                        </tbody>
-                      </table>
+                    <div class="row">
+                      <div class="col-5">
+                        <div class="icon-big text-center">
+                          <i class="fas fa-chalkboard-teacher text-primary"></i>
+                        </div>
+                      </div>
+                      <div class="col-7 col-stats">
+                        <div class="numbers">
+                          <p class="card-category">Instructors</p>
+                          <h4 class="card-title"><?php echo count($instructors); ?></h4>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <!-- Student List -->
-              <div class="tab-pane fade" id="line-students" role="tabpanel" aria-labelledby="line-students-tab">
-                <div class="card mt-4">
+              <div class="col-md-6">
+                <div class="card card-stats card-round toggle-card" data-target="students-table-container">
                   <div class="card-body">
-                    <div class="table-responsive">
-                      <table id="students-table" class="table table-striped table-bordered table-hover">
-                        <thead>
-                          <tr>
-                            <th>#</th>
-                            <th>Name</th>
-                            <th>Licenses Enrolled</th>
-                            <th>Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <?php
-                          if ($student_result->num_rows > 0) {
-                            $counter = 1; // Initialize counter
-                            while ($student = $student_result->fetch_assoc()) {
-                              echo "<tr class='clickable-row' data-href='view_student.php?id=" . $student['student_id'] . "'>";
-                              echo "<td>" . $counter++ . "</td>"; // Display counter instead of student_id
-                              echo "<td>" . htmlspecialchars($student['name']) . "</td>";
-                              echo "<td>" . (!empty($student['licenses_enrolled']) ? htmlspecialchars($student['licenses_enrolled']) : "None") . "</td>";
-                              echo "<td>
-                                      <a href='edit_student.php?id=" . htmlspecialchars($student['student_id']) . "' class='text-dark me-3'>Edit</a>
-                                      <a href='delete_student.php?id=" . htmlspecialchars($student['student_id']) . "' class='text-danger'>Delete</a>
-                                    </td>";
-                              echo "</tr>";
-                            }
-                          } else {
-                            echo "<tr><td colspan='4' class='text-center'>No students found.</td></tr>";
-                          }
-                          ?>
-                        </tbody>
-                      </table>
+                    <div class="row">
+                      <div class="col-5">
+                        <div class="icon-big text-center">
+                          <i class="fas fa-user-graduate text-success"></i>
+                        </div>
+                      </div>
+                      <div class="col-7 col-stats">
+                        <div class="numbers">
+                          <p class="card-category">Students</p>
+                          <h4 class="card-title"><?php echo count($students); ?></h4>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
+            </div>
 
+            <!-- Instructors Table -->
+            <div class="table-container" id="instructors-table-container">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="mb-0"><i class="fas fa-chalkboard-teacher text-primary"></i> Instructor List</h4>
+              </div>
+              <div class="table-responsive">
+                <table id="instructors-table" class="table table-striped table-bordered ">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Name</th>
+                      <th>Specialties</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <?php
+                    if (count($instructors) > 0) {
+                      $counter = 1;
+                      foreach ($instructors as $instructor) {
+                        echo "<tr>";
+                        echo "<td>" . $counter++ . "</td>";
+                        echo "<td>" . htmlspecialchars($instructor['name']) . "</td>";
+                        echo "<td>" . (!empty($instructor['specialties']) ? htmlspecialchars($instructor['specialties']) : "None") . "</td>";
+                        echo "<td class='action-buttons'>
+                                <a href='view_instructor.php?id=" . htmlspecialchars($instructor['instructor_id']) . "' class='btn btn-primary btn-sm mr-1'><i class='fas fa-eye'></i> View</a>
+                                <a href='edit_instructor.php?id=" . htmlspecialchars($instructor['instructor_id']) . "' class='btn btn-info btn-sm mr-1'><i class='fas fa-edit'></i> Edit</a>
+                                <a href='delete_instructor.php?id=" . htmlspecialchars($instructor['instructor_id']) . "' class='btn btn-danger btn-sm'><i class='fas fa-trash'></i> Delete</a>
+                              </td>";
+                        echo "</tr>";
+                      }
+                    } else {
+                      echo "<tr><td colspan='4' class='text-center'>No instructors found.</td></tr>";
+                    }
+                    ?>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Students Table -->
+            <div class="table-container" id="students-table-container" style="display: none;">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="mb-0"><i class="fas fa-user-graduate text-success"></i> Student List</h4>
+              </div>
+              <div class="table-responsive">
+                <table id="students-table" class="table table-striped table-bordered ">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Name</th>
+                      <th>Licenses Enrolled</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <?php
+                    if (count($students) > 0) {
+                      $counter = 1;
+                      foreach ($students as $student) {
+                        echo "<tr>";
+                        echo "<td>" . $counter++ . "</td>";
+                        echo "<td>" . htmlspecialchars($student['name']) . "</td>";
+                        echo "<td>" . (!empty($student['licenses_enrolled']) ? htmlspecialchars($student['licenses_enrolled']) : "None") . "</td>";
+                        echo "<td class='action-buttons'>
+                                <a href='view_student.php?id=" . htmlspecialchars($student['student_id']) . "' class='btn btn-primary btn-sm mr-1'><i class='fas fa-eye'></i> View</a>
+                                <a href='edit_student.php?id=" . htmlspecialchars($student['student_id']) . "' class='btn btn-info btn-sm mr-1'><i class='fas fa-edit'></i> Edit</a>
+                                <a href='delete_student.php?id=" . htmlspecialchars($student['student_id']) . "' class='btn btn-danger btn-sm'><i class='fas fa-trash'></i> Delete</a>
+                              </td>";
+                        echo "</tr>";
+                      }
+                    } else {
+                      echo "<tr><td colspan='4' class='text-center'>No students found.</td></tr>";
+                    }
+                    ?>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
@@ -176,38 +218,129 @@ include '../../../include/footer.html';
 <script>
   $(document).ready(function() {
     $("#instructors-table").DataTable({});
+  });
+
+  $(document).ready(function() {
     $("#students-table").DataTable({});
+  });
 
-    // Make entire row clickable
-    $(".clickable-row").click(function() {
-      window.location = $(this).data("href");
+  $(document).ready(function() {
+    // Add click event for the toggle cards
+    $('.toggle-card').on('click', function() {
+      // Remove active class from all cards
+      $('.toggle-card').removeClass('active');
+
+      // Add active class to clicked card
+      $(this).addClass('active');
+
+      // Hide all tables
+      $('.table-container').hide();
+
+      // Show the table corresponding to the clicked card
+      $('#' + $(this).data('target')).show();
     });
+  });
 
-    // Dynamically show buttons based on active tab
-    function updateButtons() {
-      const activeTab = $(".nav-link.active").attr("id");
-      const buttonContainer = $("#dynamic-buttons");
-      buttonContainer.empty();
-
-      if (activeTab === "line-instructors-tab") {
-        buttonContainer.append('<a href="add_instructor.php" class="btn btn-primary btn-round">Add Instructor</a>');
-      } else if (activeTab === "line-students-tab") {
-        buttonContainer.append('<a href="add_student.php" class="btn btn-primary btn-round">Add Student</a>');
+  $(document).ready(function() {
+    // Add visual feedback when hovering over cards
+    $('.toggle-card').hover(
+      function() {
+        if (!$(this).hasClass('active')) {
+          $(this).css('cursor', 'pointer');
+          $(this).addClass('shadow-sm');
+        }
+      },
+      function() {
+        $(this).removeClass('shadow-sm');
       }
-    }
+    );
+  });
 
-    // Initial button update
-    updateButtons();
+  document.addEventListener('DOMContentLoaded', function() {
+    // Update the dynamic button based on the active card
+    document.querySelectorAll('.toggle-card').forEach(function(card) {
+      card.addEventListener('click', function() {
+        const dynamicButtonContainer = document.getElementById('dynamic-button-container');
 
-    // Update buttons on tab change
-    $(".nav-link").on("shown.bs.tab", function() {
-      updateButtons();
+        // Check which card is active and update the button
+        if (this.getAttribute('data-target') === 'instructors-table-container') {
+          dynamicButtonContainer.innerHTML = '<a href="add_instructor.php" class="btn btn-primary">Add Instructor</a>';
+        } else if (this.getAttribute('data-target') === 'students-table-container') {
+          dynamicButtonContainer.innerHTML = '<a href="add_student.php" class="btn btn-primary">Add Student</a>';
+        }
+      });
+    });
+  });
+
+  $(document).ready(function() {
+    // Toggle user card content visibility
+    $('#user-toggle-btn').click(function() {
+      var cardBody = $('#user-card-body');
+
+      // Remove transition property to avoid conflicts
+      cardBody.css('transition', 'none');
+
+      // Use jQuery's slideToggle with a specified duration
+      cardBody.slideToggle(300);
+
+      // Toggle the icon
+      var icon = $(this).find('i');
+      if (icon.hasClass('fa-minus')) {
+        icon.removeClass('fa-minus').addClass('fa-plus');
+      } else {
+        icon.removeClass('fa-plus').addClass('fa-minus');
+      }
     });
   });
 </script>
 
 <style>
-  .clickable-row {
+  .toggle-card {
+    transition: all 0.3s ease;
     cursor: pointer;
+  }
+
+  .toggle-card.active {
+    border-bottom: 3px solid #1572E8;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .toggle-card:hover:not(.active) {
+    transform: translateY(-5px);
+  }
+
+  .table-container {
+    transition: all 0.3s ease;
+  }
+  
+  /* Button spacing */
+  .mr-1 {
+    margin-right: 0.25rem;
+  }
+  
+  .mr-3 {
+    margin-right: 1rem;
+  }
+  
+  /* Card body transition handling */
+  #user-card-body {
+    transition: none;
+  }
+  
+  /* Card header styling */
+  .card-header {
+    padding: 0.75rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .card-title {
+    margin-bottom: 0;
+  }
+  
+  /* Action buttons styling */
+  .action-buttons {
+    white-space: nowrap;
   }
 </style>

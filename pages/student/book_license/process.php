@@ -146,44 +146,54 @@ try {
 
     // Commit transaction
     $conn->commit();
+
+    // Store payment ID for potential use
+    $_SESSION['last_payment_id'] = $payment_id;
 ?>
 
-    <div class="container">
+<div class="container">
         <div class="page-inner">
-
-            <!-- Inner page content -->
             <div class="page-category">
-
                 <div class="row justify-content-center">
                     <div class="col-md-8 col-lg-6">
                         <div class="card shadow-lg">
                             <div class="card-header text-center">
-                                <h3>Booking Confirmation</h3>
+                                <h3>Processing Payment</h3>
                                 <p class="text-muted">Please do not refresh this page.</p>
                             </div>
-                            <div class="card-body">
-                                <h6 class="op-7 mb-3 text-center">Your booking is being processed. Please be patient.</h6>
-                                <div class="text-center mt-4">
-                                    <button onclick="window.location.href='receipt.php?payment_id=<?php echo $payment_id; ?>'" class="btn btn-success btn-lg">Proceed to Receipt</button>
+                            <div class="card-body text-center">
+                                <div class="my-5">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="sr-only">Loading...</span>
+                                    </div>
+                                    <p class="mt-3">Your license booking is being processed...</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-
             </div>
-
         </div>
     </div>
 
+    <script>
+        // Redirect to receipt page after 2 seconds
+        setTimeout(function() {
+            window.location.href = 'receipt.php?payment_id=<?php echo $payment_id; ?>';
+        }, 2000);
+    </script>
 
 <?php
 } catch (Exception $e) {
     $conn->rollback();
-    echo "<div class='alert alert-danger text-center'>An error occurred: " . htmlspecialchars($e->getMessage()) . "</div>";
+    echo "<div class='container'><div class='page-inner'><div class='page-category'>
+          <div class='alert alert-danger text-center'>
+            <h4><i class='fas fa-exclamation-triangle'></i> Error</h4>
+            <p>" . htmlspecialchars($e->getMessage()) . "</p>
+            <a href='list_license.php' class='btn btn-primary mt-3'>Return to License List</a>
+          </div>
+          </div></div></div>";
 }
-?>
 
-<?php
 include '../../../include/footer.html';
 ?>

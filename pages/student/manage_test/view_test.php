@@ -4,6 +4,7 @@ include '../../../database/db_connection.php';
 
 $test_data = null;
 $error_message = null;
+$retest_already_scheduled = false;
 
 if (!isset($_GET['test_session_id']) || empty($_GET['test_session_id'])) {
     $error_message = 'No test session specified.';
@@ -25,11 +26,11 @@ if (!isset($_GET['test_session_id']) || empty($_GET['test_session_id'])) {
         $student_row = $student_result->fetch_assoc();
         $student_id = $student_row['student_id'];
 
-        $query = "SELECT ts.*, t.test_name,
+        $query = "SELECT ts.*, t.test_name, t.test_id,
                   u.name AS instructor_name, 
                   sts.student_test_session_id, sts.attendance_status,
                   st.status AS test_status, st.score, st.comment, st.student_test_id,
-                  sl.license_id, l.license_name, l.license_type
+                  sl.license_id, sl.student_license_id, l.license_name, l.license_type
                   FROM test_sessions ts
                   JOIN tests t ON ts.test_id = t.test_id
                   LEFT JOIN instructors i ON ts.instructor_id = i.instructor_id
@@ -51,6 +52,33 @@ if (!isset($_GET['test_session_id']) || empty($_GET['test_session_id'])) {
 
         if ($result->num_rows > 0) {
             $test_data = $result->fetch_assoc();
+
+            // Check if a retest has already been scheduled
+            if ($test_data['test_status'] == 'Failed') {
+                $retest_check_query = "SELECT 1 FROM student_tests 
+                                      WHERE test_id = ? 
+                                      AND student_license_id = ? 
+                                      AND status = 'Pending'
+                                      AND student_test_id != ?";
+                $retest_stmt = $conn->prepare($retest_check_query);
+                $retest_stmt->bind_param("sss", $test_data['test_id'], $test_data['student_license_id'], $test_data['student_test_id']);
+                $retest_stmt->execute();
+                $retest_result = $retest_stmt->get_result();
+                $retest_already_scheduled = ($retest_result->num_rows > 0);
+
+                // Count previous attempts for this test
+                $attempts_query = "SELECT COUNT(*) as attempt_count 
+                                  FROM student_tests 
+                                  WHERE test_id = ? 
+                                  AND student_license_id = ? 
+                                  AND (status = 'Passed' OR status = 'Failed')";
+                $attempts_stmt = $conn->prepare($attempts_query);
+                $attempts_stmt->bind_param("ss", $test_data['test_id'], $test_data['student_license_id']);
+                $attempts_stmt->execute();
+                $attempts_result = $attempts_stmt->get_result();
+                $attempts_row = $attempts_result->fetch_assoc();
+                $attempt_count = $attempts_row['attempt_count'];
+            }
         } else {
             $error_message = 'Test session details not found or you are not authorized to view this test.';
         }
@@ -94,21 +122,35 @@ if (!isset($_GET['test_session_id']) || empty($_GET['test_session_id'])) {
                         <div class="card">
                             <div class="card-header d-flex justify-content-between align-items-center">
                                 <h4 class="card-title">Test Detail</h4>
-                                <div class="ms-md-auto py-2 py-md-0">
+                                <div class="d-flex align-items-center">
                                     <?php if ($test_data['test_status'] == 'Pending'): ?>
-                                        <a href="#" class="btn btn-info btn-round" onclick="printTestInfo('<?php echo $test_data['student_test_session_id']; ?>')">
+                                        <a href="#" class="btn btn-info mr-2" onclick="printTestInfo('<?php echo $test_data['student_test_session_id']; ?>')">
                                             <i class="fa fa-print"></i> Print Test Information
                                         </a>
                                     <?php endif; ?>
                                     <?php if ($test_data['test_status'] == 'Passed' || $test_data['test_status'] == 'Failed'): ?>
-                                        <a href="#" class="btn btn-primary btn-round" onclick="printResult('<?php echo $test_data['student_test_id']; ?>')">
+                                        <a href="#" class="btn btn-primary mr-2" onclick="printResult('<?php echo $test_data['student_test_id']; ?>')">
                                             <i class="fa fa-download"></i> Download Results
                                         </a>
                                     <?php endif; ?>
+                                    <?php if ($test_data['test_status'] == 'Failed'): ?>
+                                        <?php if ($retest_already_scheduled): ?>
+                                            <button class="btn btn-secondary mr-2" disabled>
+                                                <i class="fa fa-check"></i> Retest Paid
+                                            </button>
+                                        <?php else: ?>
+                                            <a href="/pages/student/manage_test/confirm_retest.php?test_id=<?php echo $test_data['test_id']; ?>&student_license_id=<?php echo $test_data['student_license_id']; ?>" class="btn btn-warning mr-2">
+                                                <i class="fa fa-credit-card"></i> Pay for Retest
+                                            </a>
+                                        <?php endif; ?>
+                                    <?php endif; ?>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" id="test-detail-toggle-btn">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
                                 </div>
                             </div>
 
-                            <div class="card-body">
+                            <div class="card-body" id="test-detail-card-body">
                                 <!-- Test Status -->
                                 <div class="row mb-4">
                                     <div class="col-md-12">
@@ -124,6 +166,31 @@ if (!isset($_GET['test_session_id']) || empty($_GET['test_session_id'])) {
                                                 <h4><i class="fa fa-times-circle"></i> Test Status: <?php echo $test_data['test_status']; ?></h4>
                                                 <?php if (!empty($test_data['score'])): ?>
                                                     <p class="mb-0">Score: <?php echo $test_data['score']; ?></p>
+                                                <?php endif; ?>
+
+                                                <?php if (isset($attempt_count)): ?>
+                                                    <p class="mb-0">Attempt: <?php echo $attempt_count; ?></p>
+                                                <?php endif; ?>
+
+                                                <?php if ($retest_already_scheduled): ?>
+                                                    <p class="mt-2 mb-0">
+                                                        <span class="badge badge-info">
+                                                            <i class="fa fa-calendar-check"></i> Retest has been paid
+                                                        </span>
+                                                    </p>
+                                                <?php endif; ?>
+                                            </div><?php elseif ($test_data['test_status'] == 'Failed'): ?>
+                                            <div class="alert alert-danger">
+                                                <h4><i class="fa fa-times-circle"></i> Test Status: <?php echo $test_data['test_status']; ?></h4>
+                                                <?php if (!empty($test_data['score'])): ?>
+                                                    <p class="mb-0">Score: <?php echo $test_data['score']; ?></p>
+                                                <?php endif; ?>
+                                                <?php if ($retest_already_scheduled): ?>
+                                                    <p class="mt-2 mb-0">
+                                                        <span class="badge badge-info">
+                                                            <i class="fa fa-calendar-check"></i> Retest has been paid
+                                                        </span>
+                                                    </p>
                                                 <?php endif; ?>
                                             </div>
                                         <?php elseif ($test_data['test_status'] == 'Pending'): ?>
@@ -212,3 +279,86 @@ if (!isset($_GET['test_session_id']) || empty($_GET['test_session_id'])) {
 </div>
 
 <?php include '../../../include/footer.html'; ?>
+
+<script>
+    $(document).ready(function() {
+        // Toggle test detail card content visibility
+        $('#test-detail-toggle-btn').click(function() {
+            var cardBody = $('#test-detail-card-body');
+
+            // Remove transition property to avoid conflicts
+            cardBody.css('transition', 'none');
+
+            // Use jQuery's slideToggle with a specified duration
+            cardBody.slideToggle(300);
+
+            // Toggle the icon
+            var icon = $(this).find('i');
+            if (icon.hasClass('fa-minus')) {
+                icon.removeClass('fa-minus').addClass('fa-plus');
+            } else {
+                icon.removeClass('fa-plus').addClass('fa-minus');
+            }
+        });
+    });
+</script>
+
+<style>
+    .card-header {
+        padding: 0.75rem 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .card-title {
+        margin-bottom: 0;
+    }
+
+    #test-detail-card-body {
+        transition: none;
+    }
+
+    /* Fix for header interaction issues */
+    .navbar .nav-link,
+    .navbar .dropdown-item {
+        z-index: 1000;
+        position: relative;
+    }
+
+    /* Add some margin to the right of buttons */
+    .mr-2 {
+        margin-right: 0.5rem;
+    }
+
+    /* Alert styles */
+    .alert {
+        border-radius: 0.25rem;
+    }
+
+    .alert h4 {
+        margin-top: 0;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Badge styles */
+    .badge {
+        padding: 0.25em 0.4em;
+        font-size: 75%;
+        font-weight: 700;
+        border-radius: 0.25rem;
+    }
+
+    /* Style for the retest button */
+    .btn-warning {
+        color: #212529;
+        background-color: #ffc107;
+        border-color: #ffc107;
+    }
+
+    .btn-warning:hover {
+        color: #212529;
+        background-color: #e0a800;
+        border-color: #d39e00;
+    }
+</style>

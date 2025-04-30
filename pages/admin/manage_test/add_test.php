@@ -148,7 +148,8 @@ ob_end_flush();
                                 <!-- Test Date -->
                                 <div class="col-md-6">
                                     <label for="testDate">Test Date</label>
-                                    <input type="date" id="testDate" name="testDate" class="form-control" required>
+                                    <input type="date" id="testDate" name="testDate" class="form-control" required
+                                        min="<?php echo date('Y-m-d', strtotime('+1 day')); ?>">
                                 </div>
                             </div>
 

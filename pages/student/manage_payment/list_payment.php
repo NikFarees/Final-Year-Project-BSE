@@ -27,6 +27,7 @@ $paymentsStmt = $conn->prepare($paymentsQuery);
 $paymentsStmt->bind_param("s", $currentUserId);
 $paymentsStmt->execute();
 $paymentsResult = $paymentsStmt->get_result();
+$paymentsCount = $paymentsResult->num_rows;
 
 // Fetch refund requests for the current student
 $refundRequestsQuery = "
@@ -51,6 +52,7 @@ $refundRequestsStmt = $conn->prepare($refundRequestsQuery);
 $refundRequestsStmt->bind_param("s", $currentUserId);
 $refundRequestsStmt->execute();
 $refundRequestsResult = $refundRequestsStmt->get_result();
+$refundRequestsCount = $refundRequestsResult->num_rows;
 ?>
 
 <div class="container">
@@ -79,94 +81,152 @@ $refundRequestsResult = $refundRequestsStmt->get_result();
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h4 class="card-title">Payment & Refund Request List</h4>
-                        <div class="ms-md-auto py-2 py-md-0">
-                            <a href="#" class="btn btn-primary btn-round">Request Refund (X)</a>
+                        <div class="card-title">Payment & Refund Request List</div>
+                        <div class="d-flex align-items-center">
+                            <a href="#" class="btn btn-primary mr-3">Request Refund (X)</a>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="payment-toggle-btn">
+                                <i class="fas fa-minus"></i>
+                            </button>
                         </div>
                     </div>
-                    <div class="card-body">
-                        <ul class="nav nav-tabs nav-line nav-color-secondary" id="line-tab" role="tablist">
-                            <li class="nav-item">
-                                <a class="nav-link active" id="line-payments-tab" data-bs-toggle="pill" href="#line-payments" role="tab" aria-controls="line-payments" aria-selected="true">Payments</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" id="line-refunds-tab" data-bs-toggle="pill" href="#line-refunds" role="tab" aria-controls="line-refunds" aria-selected="false">Refund Requests</a>
-                            </li>
-                        </ul>
-                        <div class="tab-content mt-3 mb-3" id="line-tabContent">
-
-                            <!-- Payments -->
-                            <div class="tab-pane fade show active" id="line-payments" role="tabpanel" aria-labelledby="line-payments-tab">
-                                <div class="table-responsive">
-                                    <table id="payments-table" class="table table-bordered table-striped table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th>#</th>
-                                                <th>Payment Type</th>
-                                                <th>Payment Method</th>
-                                                <th>Total Amount</th>
-                                                <th>Payment Date</th>
-                                                <th>Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php
-                                            if ($paymentsResult->num_rows > 0) {
-                                                $counter = 1;
-                                                while ($row = $paymentsResult->fetch_assoc()) {
-                                                    echo "<tr class='clickable-row' data-href='view_payment.php?id=" . $row['payment_id'] . "'>";
-                                                    echo "<td>" . $counter++ . "</td>";
-                                                    echo "<td>" . $row['payment_type'] . "</td>";
-                                                    echo "<td>" . $row['payment_method'] . "</td>";
-                                                    echo "<td>" . $row['total_amount'] . "</td>";
-                                                    echo "<td>" . $row['payment_datetime'] . "</td>";
-                                                    echo "<td>" . $row['payment_status'] . "</td>";
-                                                    echo "</tr>";
-                                                }
-                                            } else {
-                                                echo "<tr><td colspan='6'>No payments found.</td></tr>";
-                                            }
-                                            ?>
-                                        </tbody>
-                                    </table>
+                    <div class="card-body" id="payment-card-body">
+                        <!-- Toggle Cards -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="card card-stats card-round toggle-card active" data-target="payments-container">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-5">
+                                                <div class="icon-big text-center">
+                                                    <i class="fas fa-credit-card text-primary"></i>
+                                                </div>
+                                            </div>
+                                            <div class="col-7 col-stats">
+                                                <div class="numbers">
+                                                    <p class="card-category">Payments</p>
+                                                    <h4 class="card-title"><?php echo $paymentsCount; ?></h4>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <!-- Refund Requests -->
-                            <div class="tab-pane fade" id="line-refunds" role="tabpanel" aria-labelledby="line-refunds-tab">
-                                <div class="table-responsive">
-                                    <table id="refunds-table" class="table table-bordered table-striped table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th>#</th>
-                                                <th>Payment ID</th>
-                                                <th>Request Date</th>
-                                                <th>Reason</th>
-                                                <th>Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php
-                                            if ($refundRequestsResult->num_rows > 0) {
-                                                $counter = 1;
-                                                while ($row = $refundRequestsResult->fetch_assoc()) {
-                                                    echo "<tr class='clickable-row' data-href='view_refund.php?id=" . $row['refund_request_id'] . "'>";
-                                                    echo "<td>" . $counter++ . "</td>";
-                                                    echo "<td>" . $row['payment_id'] . "</td>";
-                                                    echo "<td>" . $row['request_datetime'] . "</td>";
-                                                    echo "<td>" . $row['reason'] . "</td>";
-                                                    echo "<td>" . $row['status'] . "</td>";
-                                                    echo "</tr>";
-                                                }
-                                            } else {
-                                                echo "<tr><td colspan='5'>No refund requests found.</td></tr>";
-                                            }
-                                            ?>
-                                        </tbody>
-                                    </table>
+                            <div class="col-md-6">
+                                <div class="card card-stats card-round toggle-card" data-target="refunds-container">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-5">
+                                                <div class="icon-big text-center">
+                                                    <i class="fas fa-undo-alt text-warning"></i>
+                                                </div>
+                                            </div>
+                                            <div class="col-7 col-stats">
+                                                <div class="numbers">
+                                                    <p class="card-category">Refund Requests</p>
+                                                    <h4 class="card-title"><?php echo $refundRequestsCount; ?></h4>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+                        </div>
 
+                        <!-- Payments -->
+                        <div class="table-container" id="payments-container">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h4 class="mb-0"><i class="fas fa-credit-card text-primary"></i> Payments</h4>
+                            </div>
+                            <div class="table-responsive">
+                                <table id="payments-table" class="table table-bordered table-striped ">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Payment Type</th>
+                                            <th>Payment Method</th>
+                                            <th>Total Amount</th>
+                                            <th>Date</th>
+                                            <th>Time</th>
+                                            <th>Status</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php
+                                        if ($paymentsCount > 0) {
+                                            mysqli_data_seek($paymentsResult, 0); // Reset pointer
+                                            $counter = 1;
+                                            while ($row = $paymentsResult->fetch_assoc()) {
+                                                echo "<tr>";
+                                                echo "<td>" . $counter++ . "</td>";
+                                                echo "<td>" . $row['payment_type'] . "</td>";
+                                                echo "<td>" . $row['payment_method'] . "</td>";
+                                                echo "<td>" . $row['total_amount'] . "</td>";
+                                                echo "<td>" . date("d M Y", strtotime($row['payment_datetime'])) . "</td>";
+                                                echo "<td>" . date("H:i:s", strtotime($row['payment_datetime'])) . "</td>";
+                                                echo "<td>" . $row['payment_status'] . "</td>";
+                                                echo "<td>
+                                                        <a href='view_payment.php?id=" . $row['payment_id'] . "' class='btn btn-primary btn-sm'>
+                                                            <i class='fas fa-eye'></i> View
+                                                        </a>
+                                                      </td>";
+                                                echo "</tr>";
+                                            }
+                                        } else {
+                                            echo "<tr><td colspan='8'>No payments found.</td></tr>";
+                                        }
+                                        ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Refund Requests -->
+                        <div class="table-container" id="refunds-container" style="display: none;">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h4 class="mb-0"><i class="fas fa-undo-alt text-warning"></i> Refund Requests</h4>
+                            </div>
+                            <div class="table-responsive">
+                                <table id="refunds-table" class="table table-bordered table-striped ">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Payment ID</th>
+                                            <th>Date</th>
+                                            <th>Time</th>
+                                            <th>Reason</th>
+                                            <th>Status</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php
+                                        if ($refundRequestsCount > 0) {
+                                            mysqli_data_seek($refundRequestsResult, 0); // Reset pointer
+                                            $counter = 1;
+                                            while ($row = $refundRequestsResult->fetch_assoc()) {
+                                                echo "<tr>";
+                                                echo "<td>" . $counter++ . "</td>";
+                                                echo "<td>" . $row['payment_id'] . "</td>";
+                                                echo "<td>" . date("d M Y", strtotime($row['request_datetime'])) . "</td>";
+                                                echo "<td>" . date("H:i:s", strtotime($row['request_datetime'])) . "</td>";
+                                                echo "<td>" . $row['reason'] . "</td>";
+                                                echo "<td>" . $row['status'] . "</td>";
+                                                echo "<td>
+                                                        <a href='view_refund.php?id=" . $row['refund_request_id'] . "' class='btn btn-primary btn-sm'>
+                                                            <i class='fas fa-eye'></i> View
+                                                        </a>
+                                                      </td>";
+                                                echo "</tr>";
+                                            }
+                                        } else {
+                                            echo "<tr><td colspan='7'>No refund requests found.</td></tr>";
+                                        }
+                                        ?>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -182,20 +242,107 @@ include '../../../include/footer.html';
 <script>
     $(document).ready(function() {
         $("#payments-table").DataTable({});
-
-        // Make entire row clickable
-        $(".clickable-row").click(function() {
-            window.location = $(this).data("href");
-        });
     });
 
     $(document).ready(function() {
         $("#refunds-table").DataTable({});
     });
+
+    $(document).ready(function() {
+        // Add click event for the toggle cards
+        $('.toggle-card').on('click', function() {
+            // Remove active class from all cards
+            $('.toggle-card').removeClass('active');
+
+            // Add active class to clicked card
+            $(this).addClass('active');
+
+            // Hide all tables
+            $('.table-container').hide();
+
+            // Show the table corresponding to the clicked card
+            $('#' + $(this).data('target')).show();
+        });
+    });
+
+    $(document).ready(function() {        
+        // Add visual feedback when hovering over cards
+        $('.toggle-card').hover(
+            function() {
+                if (!$(this).hasClass('active')) {
+                    $(this).css('cursor', 'pointer');
+                    $(this).addClass('shadow-sm');
+                }
+            },
+            function() {
+                $(this).removeClass('shadow-sm');
+            }
+        );
+    });
+
+    $(document).ready(function() {
+        // Toggle payment card content visibility
+        $('#payment-toggle-btn').click(function() {
+            var cardBody = $('#payment-card-body');
+
+            // Remove transition property to avoid conflicts
+            cardBody.css('transition', 'none');
+
+            // Use jQuery's slideToggle with a specified duration
+            cardBody.slideToggle(300);
+
+            // Toggle the icon
+            var icon = $(this).find('i');
+            if (icon.hasClass('fa-minus')) {
+                icon.removeClass('fa-minus').addClass('fa-plus');
+            } else {
+                icon.removeClass('fa-plus').addClass('fa-minus');
+            }
+        });
+    });
 </script>
 
 <style>
-    .clickable-row {
+    .toggle-card {
+        transition: all 0.3s ease;
         cursor: pointer;
+    }
+
+    .toggle-card.active {
+        border-bottom: 3px solid #1572E8;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .toggle-card:hover:not(.active) {
+        transform: translateY(-5px);
+    }
+
+    .table-container {
+        transition: all 0.3s ease;
+    }
+
+    #payment-card-body {
+        transition: none;
+    }
+
+    /* Fix for header interaction issues */
+    .navbar .nav-link, .navbar .dropdown-item {
+        z-index: 1000;
+        position: relative;
+    }
+
+    /* Add some margin to the Request Refund button */
+    .mr-3 {
+        margin-right: 1rem;
+    }
+    .card-header {
+        padding: 0.75rem 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .card-title {
+        margin-bottom: 0;
     }
 </style>

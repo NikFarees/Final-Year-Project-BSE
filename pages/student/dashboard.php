@@ -141,7 +141,7 @@ $licenseResult = $conn->query($licenseQuery);
               <?php endif; ?>
             </div>
             <div class="text-center mt-3">
-              <a href="/pages/student/view_announcement/view_announcement.php" class="btn btn-sm btn-primary">
+              <a href="/pages/student/manage_announcement/list_announcement.php" class="btn btn-sm btn-primary">
                 See More
               </a>
             </div>

@@ -2,6 +2,9 @@
 include '../../../include/in_header.php';
 include '../../../database/db_connection.php';
 
+// Get the session_type from the query parameter
+$session_type = $_GET['session_type'] ?? 'default'; // Default to 'default' if not provided
+
 // Get the test_session_id from the query parameter
 $test_session_id = $_GET['test_session_id'] ?? null;
 
@@ -35,30 +38,32 @@ if ($test_session_id) {
   $test_session_result = $test_session_query->get_result();
   $test_session = $test_session_result->fetch_assoc();
 
-  // Fetch student list for the test session
   $student_list_query = $conn->prepare("
-        SELECT 
-            sts.student_test_session_id,
-            st.student_test_id,
-            s.student_id,
-            u.name AS student_name,
-            sts.attendance_status,
-            st.score,
-            st.comment,
-            st.status AS test_status
-        FROM 
-            student_test_sessions sts
-        JOIN 
-            student_tests st ON sts.student_test_id = st.student_test_id
-        JOIN 
-            student_licenses sl ON st.student_license_id = sl.student_license_id
-        JOIN 
-            students s ON sl.student_id = s.student_id
-        JOIN 
-            users u ON s.user_id = u.user_id
-        WHERE 
-            sts.test_session_id = ?
-    ");
+      SELECT 
+          sts.student_test_session_id,
+          st.student_test_id,
+          s.student_id,
+          u.name AS student_name,
+          lic.license_name, -- Fetch license name
+          sts.attendance_status,
+          st.score,
+          st.comment,
+          st.status AS test_status
+      FROM 
+          student_test_sessions sts
+      JOIN 
+          student_tests st ON sts.student_test_id = st.student_test_id
+      JOIN 
+          student_licenses sl ON st.student_license_id = sl.student_license_id
+      JOIN 
+          licenses lic ON sl.license_id = lic.license_id -- Join licenses table
+      JOIN 
+          students s ON sl.student_id = s.student_id
+      JOIN 
+          users u ON s.user_id = u.user_id
+      WHERE 
+          sts.test_session_id = ?
+  ");
   $student_list_query->bind_param("s", $test_session_id);
   $student_list_query->execute();
   $student_list_result = $student_list_query->get_result();
@@ -83,7 +88,7 @@ if ($test_session_id) {
           <i class="icon-arrow-right"></i>
         </li>
         <li class="nav-item">
-          <a href="/pages/instructor/manage_test/list_test.php">Test List</a>
+          <a href="/pages/instructor/manage_test/list_test.php">Test Overview</a>
         </li>
         <li class="separator">
           <i class="icon-arrow-right"></i>
@@ -101,11 +106,15 @@ if ($test_session_id) {
           <?php echo $error_message; ?>
         </div>
       <?php else: ?>
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">Test Session Details</h3>
+        <!-- Test Session Details Card -->
+        <div class="card mb-4">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h3 class="card-title mb-0">Test Session Details</h3>
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="toggle-details-btn">
+              <i class="fas fa-minus"></i>
+            </button>
           </div>
-          <div class="card-body">
+          <div class="card-body" id="details-card-body">
             <div class="row">
               <!-- Test Information -->
               <div class="col-md-6">
@@ -125,51 +134,66 @@ if ($test_session_id) {
                 <p><strong>Instructor:</strong> <?php echo htmlspecialchars($test_session['instructor_name']); ?> (YOU)</p>
               </div>
             </div>
+          </div>
+        </div>
 
-            <!-- Student List -->
-            <h5 class="mt-4">Student List</h5>
+        <!-- Student List Card -->
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h3 class="card-title mb-0">Student List</h3>
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="toggle-student-list-btn">
+              <i class="fas fa-minus"></i>
+            </button>
+          </div>
+          <div class="card-body" id="student-list-card-body">
             <div class="table-responsive">
-              <table class="table table-bordered table-striped">
+              <table id="student-list-table" class="table table-bordered table-striped">
                 <thead>
                   <tr>
                     <th>#</th>
                     <th>Name</th>
-                    <th>Attendance</th>
-                    <th>Score</th>
-                    <th>Comment</th>
-                    <th>Status</th>
-                    <th>Actions</th>
+                    <th>License</th>
+                    <?php if ($session_type !== 'upcoming'): ?> <!-- Hide these columns for upcoming sessions -->
+                      <th>Attendance</th>
+                      <th>Score</th>
+                      <th>Comment</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    <?php endif; ?>
                   </tr>
                 </thead>
                 <tbody>
                   <?php $counter = 1; ?>
                   <?php while ($student = $student_list_result->fetch_assoc()): ?>
                     <tr>
-                      <td><?php echo $counter++; ?></td> <!-- Display counter instead of student_id -->
+                      <td><?php echo $counter++; ?></td>
                       <td><?php echo htmlspecialchars($student['student_name']); ?></td>
-                      <td>
-                        <span class="badge <?php echo $student['attendance_status'] === 'Attend' ? 'badge-success' : 'badge-danger'; ?>">
-                          <?php echo htmlspecialchars($student['attendance_status'] ?? 'Absent'); ?>
-                        </span>
-                      </td>
-                      <td><?php echo $student['score'] !== null ? htmlspecialchars($student['score']) . '/50' : '-'; ?></td>
-                      <td><?php echo htmlspecialchars($student['comment'] ?? '-'); ?></td>
-                      <td>
-                        <span class="badge 
-                          <?php
-                                  echo $student['test_status'] === 'Passed' ? 'badge-success' : ($student['test_status'] === 'Failed' ? 'badge-danger' : ($student['test_status'] === 'Pending' ? 'badge-warning' : 'badge-secondary'));
-                          ?>">
-                          <?php echo htmlspecialchars($student['test_status']); ?>
-                        </span>
-                      </td>
-                      <td>
-                        <button class="btn btn-warning btn-sm mark-attendance"
-                          data-session-id="<?php echo htmlspecialchars($student['student_test_session_id']); ?>" 
-                          data-current-status="<?php echo htmlspecialchars($student['attendance_status']); ?>">
-                          Mark Attendance
-                        </button>
-                        <a href="edit_score.php?student_test_id=<?php echo htmlspecialchars($student['student_test_id']); ?>" class="btn btn-primary btn-sm">Edit Score</a>
-                      </td>
+                      <td><?php echo htmlspecialchars($student['license_name']); ?></td>
+                      <?php if ($session_type !== 'upcoming'): ?> <!-- Hide these columns for upcoming sessions -->
+                        <td>
+                          <span class="badge <?php echo $student['attendance_status'] === 'Attend' ? 'badge-success' : 'badge-danger'; ?>">
+                            <?php echo htmlspecialchars($student['attendance_status'] ?? 'Absent'); ?>
+                          </span>
+                        </td>
+                        <td><?php echo $student['score'] !== null ? htmlspecialchars($student['score']) . '/50' : '-'; ?></td>
+                        <td><?php echo htmlspecialchars($student['comment'] ?? '-'); ?></td>
+                        <td>
+                          <span class="badge 
+                    <?php
+                        echo $student['test_status'] === 'Passed' ? 'badge-success' : ($student['test_status'] === 'Failed' ? 'badge-danger' : ($student['test_status'] === 'Pending' ? 'badge-warning' : 'badge-secondary'));
+                    ?>">
+                            <?php echo htmlspecialchars($student['test_status']); ?>
+                          </span>
+                        </td>
+                        <td>
+                          <button class="btn btn-warning btn-sm mark-attendance"
+                            data-session-id="<?php echo htmlspecialchars($student['student_test_session_id']); ?>"
+                            data-current-status="<?php echo htmlspecialchars($student['attendance_status']); ?>">
+                            Mark Attendance
+                          </button>
+                          <a href="edit_score.php?student_test_id=<?php echo htmlspecialchars($student['student_test_id']); ?>" class="btn btn-primary btn-sm">Edit Score</a>
+                        </td>
+                      <?php endif; ?>
                     </tr>
                   <?php endwhile; ?>
                 </tbody>
@@ -179,11 +203,44 @@ if ($test_session_id) {
         </div>
       <?php endif; ?>
     </div>
-
   </div>
 </div>
 
+<?php
+include '../../../include/footer.html';
+?>
+
 <script>
+  $(document).ready(function() {
+    $("#student-list-table").DataTable({});
+    
+    // Toggle functionality for test details card
+    $('#toggle-details-btn').click(function() {
+      $('#details-card-body').slideToggle(); // Slide up/down the body
+      
+      // Toggle the icon
+      var icon = $(this).find('i');
+      if (icon.hasClass('fa-minus')) {
+        icon.removeClass('fa-minus').addClass('fa-plus');
+      } else {
+        icon.removeClass('fa-plus').addClass('fa-minus');
+      }
+    });
+    
+    // Toggle functionality for student list card
+    $('#toggle-student-list-btn').click(function() {
+      $('#student-list-card-body').slideToggle(); // Slide up/down the body
+      
+      // Toggle the icon
+      var icon = $(this).find('i');
+      if (icon.hasClass('fa-minus')) {
+        icon.removeClass('fa-minus').addClass('fa-plus');
+      } else {
+        icon.removeClass('fa-plus').addClass('fa-minus');
+      }
+    });
+  });
+
   document.addEventListener('DOMContentLoaded', function() {
     // Handle Mark Attendance button click
     document.querySelectorAll('.mark-attendance').forEach(function(button) {
@@ -247,6 +304,12 @@ if ($test_session_id) {
 <!-- Include SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<?php
-include '../../../include/footer.html';
-?>
+<style>
+  .card-header {
+    transition: all 0.3s ease;
+  }
+  
+  .btn-outline-secondary:focus {
+    box-shadow: none;
+  }
+</style>

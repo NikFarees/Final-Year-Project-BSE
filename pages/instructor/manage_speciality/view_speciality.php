@@ -52,10 +52,13 @@ if ($result->num_rows > 0) {
     <!-- Inner page content -->
     <div class="page-category">
       <div class="card">
-        <div class="card-header">
+        <div class="card-header d-flex justify-content-between align-items-center">
           <div class="card-title">Speciality List</div>
+          <button type="button" class="btn btn-sm btn-outline-secondary" id="toggle-card-btn">
+            <i class="fas fa-minus"></i> <!-- Initially a minus icon -->
+          </button>
         </div>
-        <div class="card-body">
+        <div class="card-body" id="card-body-content">
           <div class="table-responsive">
             <table id="specialities-table" class="table table-bordered table-striped">
               <thead>
@@ -153,5 +156,18 @@ if ($result->num_rows > 0) {
 <script>
   $(document).ready(function() {
     $("#specialities-table").DataTable({});
+    
+    // Toggle card content visibility
+    $('#toggle-card-btn').click(function() {
+      $('#card-body-content').slideToggle(); // Slide up/down the body
+
+      // Toggle the icon
+      var icon = $(this).find('i');
+      if (icon.hasClass('fa-minus')) {
+        icon.removeClass('fa-minus').addClass('fa-plus');
+      } else {
+        icon.removeClass('fa-plus').addClass('fa-minus');
+      }
+    });
   });
 </script>

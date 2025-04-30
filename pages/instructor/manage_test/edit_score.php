@@ -5,11 +5,35 @@ include '../../../database/db_connection.php';
 // Get the student_test_id from the query parameter
 $student_test_id = $_GET['student_test_id'] ?? null;
 
+function updateFollowUpTestEligibility($conn, $student_license_id, $status) {
+    // Set the appropriate status for follow-up tests based on TES02 result
+    $followup_status = ($status === 'Passed') ? 'Pending' : 'Ineligible';
+    
+    // Update TES03 and TES04 status for this student's license
+    $update_query = $conn->prepare("
+        UPDATE student_tests 
+        SET status = ?, schedule_status = 'Unassigned'
+        WHERE student_license_id = ? 
+        AND test_id IN ('TES03', 'TES04')
+    ");
+    
+    if (!$update_query) {
+        return false;
+    }
+    
+    $update_query->bind_param("ss", $followup_status, $student_license_id);
+    $update_query->execute();
+    
+    // Return number of rows affected
+    return $update_query->affected_rows;
+}
+
 if ($student_test_id) {
-    // Fetch student test details along with test_session_id
-    $student_test_query = $conn->prepare("
+  // Fetch student test details along with test_session_id
+  $student_test_query = $conn->prepare("
         SELECT 
             st.student_test_id,
+            st.student_license_id,
             s.student_id,
             u.name AS student_name,
             st.score,
@@ -33,68 +57,91 @@ if ($student_test_id) {
         WHERE 
             st.student_test_id = ?
     ");
-    $student_test_query->bind_param("s", $student_test_id);
-    $student_test_query->execute();
-    $student_test_result = $student_test_query->get_result();
-    $student_test = $student_test_result->fetch_assoc();
+  $student_test_query->bind_param("s", $student_test_id);
+  $student_test_query->execute();
+  $student_test_result = $student_test_query->get_result();
+  $student_test = $student_test_result->fetch_assoc();
 
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        // Handle form submission
-        $new_score = $_POST['score'];
-        $comments = $_POST['comments'];
-        $status = $new_score >= 42 ? 'Passed' : 'Failed'; // Determine status based on score
+  if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Handle form submission
+    $new_score = $_POST['score'];
+    $comments = $_POST['comments'];
+    $status = $new_score >= 42 ? 'Passed' : 'Failed'; // Determine status based on score
 
+    // Start transaction for data integrity
+    $conn->begin_transaction();
+    
+    try {
         // Update the student test record
         $update_query = $conn->prepare("
-            UPDATE student_tests 
-            SET score = ?, status = ?, comment = ? 
-            WHERE student_test_id = ?
-        ");
+                UPDATE student_tests 
+                SET score = ?, status = ?, comment = ? 
+                WHERE student_test_id = ?
+            ");
         $update_query->bind_param("dsss", $new_score, $status, $comments, $student_test_id);
 
         if ($update_query->execute()) {
             // Update student_lessons status based on the student_tests status
             $lesson_status = ($status === 'Passed') ? 'Pending' : 'Ineligible';
             $update_lessons_query = $conn->prepare("
-                UPDATE student_lessons 
-                SET status = ? 
-                WHERE student_license_id = (
-                    SELECT student_license_id 
-                    FROM student_tests 
-                    WHERE student_test_id = ?
-                )
-            ");
-            $update_lessons_query->bind_param("ss", $lesson_status, $student_test_id);
+                    UPDATE student_lessons 
+                    SET status = ? 
+                    WHERE student_license_id = ?
+                ");
+            $update_lessons_query->bind_param("ss", $lesson_status, $student_test['student_license_id']);
             $update_lessons_query->execute();
-
+            
+            // If this is TES02, update follow-up tests eligibility (TES03 and TES04)
+            $affected_rows = 0;
+            if ($student_test['test_id'] === 'TES02') {
+                $affected_rows = updateFollowUpTestEligibility(
+                    $conn, 
+                    $student_test['student_license_id'], 
+                    $status
+                );
+            }
+            
+            // Commit all changes
+            $conn->commit();
+            
+            $success_message = 'Score updated successfully!';
+            if ($student_test['test_id'] === 'TES02') {
+                $success_message .= ' Also updated eligibility for ' . $affected_rows . ' follow-up tests.';
+            }
+            
             echo "<script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    Swal.fire({
-                        title: 'Success',
-                        text: 'Score and lesson statuses updated successfully!',
-                        icon: 'success',
-                        confirmButtonText: 'OK'
-                    }).then(() => {
-                        window.location.href = '/pages/instructor/manage_test/view_test.php?test_session_id=" . htmlspecialchars($student_test['test_session_id']) . "';
+                    document.addEventListener('DOMContentLoaded', function() {
+                        Swal.fire({
+                            title: 'Success',
+                            text: '$success_message',
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            window.location.href = '/pages/instructor/manage_test/view_test.php?test_session_id=" . htmlspecialchars($student_test['test_session_id']) . "';
+                        });
                     });
-                });
-            </script>";
-        } else {
-            echo "<script>
+                </script>";
+        }
+    } catch (Exception $e) {
+        // Roll back on error
+        $conn->rollback();
+        
+        echo "<script>
                 document.addEventListener('DOMContentLoaded', function() {
                     Swal.fire({
                         title: 'Error',
-                        text: 'Failed to update score. Please try again.',
+                        text: 'Failed to update score: " . $e->getMessage() . "',
                         icon: 'error',
                         confirmButtonText: 'OK'
                     });
                 });
             </script>";
-        }
     }
+  }
 } else {
-    $error_message = "Student test ID is missing.";
+  $error_message = "Student test ID is missing.";
 }
+
 ?>
 
 <div class="container">
@@ -112,13 +159,13 @@ if ($student_test_id) {
           <i class="icon-arrow-right"></i>
         </li>
         <li class="nav-item">
-          <a href="/pages/instructor/manage_test/list_test.php">Test List</a>
+          <a href="/pages/instructor/manage_test/list_test.php">Test Overview</a>
         </li>
         <li class="separator">
           <i class="icon-arrow-right"></i>
         </li>
         <li class="nav-item">
-          <a href="/pages/instructor/manage_test/view_test.php?test_session_id=<?php echo htmlspecialchars($student_test['test_session_id']); ?>">View Test</a>
+          <a href="/pages/instructor/manage_test/view_test.php?test_session_id=<?php echo htmlspecialchars($student_test['test_session_id']); ?>">Test Session Details</a>
         </li>
         <li class="separator">
           <i class="icon-arrow-right"></i>

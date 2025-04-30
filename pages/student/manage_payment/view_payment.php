@@ -106,10 +106,13 @@ $paymentDetailsResult = $stmt->get_result();
         <!-- Inner page content -->
         <div class="page-category">
             <div class="card">
-                <div class="card-header">
-                    <h3 class="fw-bold mb-3">Payment Detail</h3>
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="fw-bold mb-0">Payment Detail</h3>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="payment-detail-toggle-btn">
+                        <i class="fas fa-minus"></i>
+                    </button>
                 </div>
-                <div class="card-body">
+                <div class="card-body" id="payment-detail-card-body">
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="payment_id">Payment ID</label>
@@ -132,8 +135,8 @@ $paymentDetailsResult = $stmt->get_result();
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label for="payment_datetime">Payment Date</label>
-                            <input type="text" class="form-control" id="payment_datetime" value="<?php echo htmlspecialchars($payment['payment_datetime']); ?>" readonly>
+                            <label for="payment_datetime">Payment DateTime</label>
+                            <input type="text" class="form-control" id="payment_datetime" value="<?php echo date('d M Y H:i:s', strtotime($payment['payment_datetime'])); ?>" readonly>
                         </div>
                         <div class="col-md-6">
                             <label for="payment_status">Payment Status</label>
@@ -179,3 +182,53 @@ $paymentDetailsResult = $stmt->get_result();
 <?php
 include '../../../include/footer.html';
 ?>
+
+<script>
+    $(document).ready(function() {
+        // Toggle payment detail card content visibility
+        $('#payment-detail-toggle-btn').click(function() {
+            var cardBody = $('#payment-detail-card-body');
+
+            // Remove transition property to avoid conflicts
+            cardBody.css('transition', 'none');
+
+            // Use jQuery's slideToggle with a specified duration
+            cardBody.slideToggle(300);
+
+            // Toggle the icon
+            var icon = $(this).find('i');
+            if (icon.hasClass('fa-minus')) {
+                icon.removeClass('fa-minus').addClass('fa-plus');
+            } else {
+                icon.removeClass('fa-plus').addClass('fa-minus');
+            }
+        });
+    });
+</script>
+
+<style>
+    .card-header {
+        padding: 0.75rem 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .fw-bold {
+        font-weight: 700;
+    }
+    
+    .mb-0 {
+        margin-bottom: 0 !important;
+    }
+    
+    #payment-detail-card-body {
+        transition: none;
+    }
+    
+    /* Fix for header interaction issues */
+    .navbar .nav-link, .navbar .dropdown-item {
+        z-index: 1000;
+        position: relative;
+    }
+</style>

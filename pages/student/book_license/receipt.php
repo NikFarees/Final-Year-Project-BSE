@@ -5,7 +5,7 @@ include '../../../database/db_connection.php';
 // Check if payment_id is passed
 if (!isset($_GET['payment_id']) || empty($_GET['payment_id'])) {
     echo "<div class='container mt-5'><div class='alert alert-danger'>Payment ID is missing.</div></div>";
-    include '../include/footer.html';
+    include '../../../include/footer.html';
     exit();
 }
 
@@ -32,7 +32,7 @@ try {
 
     if ($resultPayment->num_rows === 0) {
         echo "<div class='container mt-5'><div class='alert alert-danger'>No payment record found for the given ID.</div></div>";
-        include '../include/footer.html';
+        include '../../../include/footer.html';
         exit();
     }
 
@@ -42,9 +42,20 @@ try {
     $stmtDetails->bind_param("s", $payment_id);
     $stmtDetails->execute();
     $resultDetails = $stmtDetails->get_result();
+
+    // Get license information
+    $sqlLicense = "SELECT l.license_name, l.license_type 
+                  FROM student_licenses sl
+                  JOIN licenses l ON sl.license_id = l.license_id
+                  WHERE sl.student_license_id = ?";
+    $stmtLicense = $conn->prepare($sqlLicense);
+    $stmtLicense->bind_param("s", $payment['student_license_id']);
+    $stmtLicense->execute();
+    $licenseResult = $stmtLicense->get_result();
+    $licenseInfo = $licenseResult->fetch_assoc();
 } catch (Exception $e) {
     echo "<div class='container mt-5'><div class='alert alert-danger'>An error occurred: " . $e->getMessage() . "</div></div>";
-    include '../include/footer.html';
+    include '../../../include/footer.html';
     exit();
 }
 
@@ -74,122 +85,90 @@ function fetchItemName($conn, $type, $id)
     }
     return "Unknown";
 }
+
+// Group payment details by type for easier display
+$itemsByType = ['License' => [], 'Lesson' => [], 'Test' => []];
+
+// Fetch items and group them by type
+while ($detail = $resultDetails->fetch_assoc()) {
+    $itemName = fetchItemName($conn, $detail['item_type'], $detail['item_id']);
+    $itemsByType[$detail['item_type']][] = ['name' => $itemName, 'amount' => $detail['amount']];
+}
 ?>
-
-<style>
-    @media print {
-        body * {
-            visibility: hidden;
-            /* Hide everything except the receipt */
-        }
-
-        #receipt-card,
-        #receipt-card * {
-            visibility: visible;
-            /* Make the receipt visible for printing */
-            font-size: 15px;
-            /* Ensure consistent font size for print */
-        }
-
-        /* Prevent scaling */
-        @page {
-            size: auto;
-            /* Let the content scale naturally */
-            margin: 15mm;
-            /* Adjust margins to ensure content doesn't get cut off */
-        }
-    }
-</style>
 
 <div class="container">
     <div class="page-inner">
+        <div class="page-header">
+        </div>
 
-        <!-- Inner page content -->
         <div class="page-category">
-
             <div class="row justify-content-center">
-                <div class="col-12 col-md-8 col-lg-7">
-                    <div class="card" id="receipt-card">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <div>
-                                <h3 class="m-0">Receipt</h3>
-                                <p class="text-muted mb-0">Payment ID: <?php echo htmlspecialchars($payment['payment_id']); ?></p>
-                            </div>
-                            <button onclick="window.print()" class="btn btn-secondary btn-sm">
-                                <i class="fa fa-print"></i> Print
-                            </button>
+                <div class="col-md-8 col-lg-6">
+                    <div class="card shadow-lg" id="receipt-card">
+                        <div class="card-header bg-success text-white text-center">
+                            <i class="fas fa-check-circle fa-3x my-3"></i>
+                            <h3>License Registration Successful</h3>
                         </div>
-
-                        <div class="card-body p-4"> <!-- Added p-4 class for padding -->
-                            <h5 class="card-title">Payment Details</h5>
-                            <div class="row d-flex justify-content-between">
-                                <div class="col-8"><strong>Student Name:</strong></div>
-                                <div class="col-4 text-right"><?php echo htmlspecialchars($payment['student_name']); ?></div>
+                        <div class="card-body">
+                            <div class="text-center mb-4">
+                                <h5>Your license registration has been successfully processed.</h5>
+                                <p class="text-muted">Payment Reference: <?php echo $payment_id; ?></p>
                             </div>
-                            <div class="row d-flex justify-content-between">
-                                <div class="col-8"><strong>Payment Type:</strong></div>
-                                <div class="col-4 text-right"><?php echo htmlspecialchars($payment['payment_type']); ?></div>
+
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                Your registration is complete. Good luck with your training! Check your dashboard for updates.
                             </div>
-                            <div class="row d-flex justify-content-between">
-                                <div class="col-8"><strong>Payment Method:</strong></div>
-                                <div class="col-4 text-right"><?php echo htmlspecialchars($payment['payment_method']); ?></div>
+
+                            <div class="table-responsive mb-4">
+                                <table class="table table-bordered">
+                                    <tbody>
+                                        <tr>
+                                            <th>Student Name</th>
+                                            <td><?php echo htmlspecialchars($payment['student_name']); ?></td>
+                                        </tr>
+                                        <tr>
+                                            <th>License</th>
+                                            <td><?php echo htmlspecialchars($itemsByType['License'][0]['name'] ?? 'N/A'); ?></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Lesson Package</th>
+                                            <td><?php echo htmlspecialchars($itemsByType['Lesson'][0]['name'] ?? 'N/A'); ?></td>
+                                        </tr>
+                                        <?php if (!empty($itemsByType['Test'])): ?>
+                                            <tr>
+                                                <th>Tests</th>
+                                                <td>
+                                                    <?php foreach ($itemsByType['Test'] as $test): ?>
+                                                        <?php echo htmlspecialchars($test['name']); ?><br>
+                                                    <?php endforeach; ?>
+                                                </td>
+                                            </tr>
+                                        <?php endif; ?>
+                                        <tr>
+                                            <th>Total Amount</th>
+                                            <td>RM <?php echo number_format($payment['total_amount'], 2); ?></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Payment Method</th>
+                                            <td><?php echo htmlspecialchars($payment['payment_method']); ?></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Date</th>
+                                            <td><?php echo date('d M Y, h:i A', strtotime($payment['payment_datetime'])); ?></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
-                            <div class="row d-flex justify-content-between">
-                                <div class="col-8"><strong>Total Amount:</strong></div>
-                                <div class="col-4 text-right">RM <?php echo number_format($payment['total_amount'], 2); ?></div>
+
+                            <div class="text-center mt-4">
+                                <a href="../book_license/list_license.php" class="btn btn-primary mr-2">
+                                    Ok
+                                </a>
+                                <button onclick="window.print()" class="btn btn-secondary">
+                                    <i class="fas fa-print"></i> Print Receipt
+                                </button>
                             </div>
-                            <div class="row d-flex justify-content-between">
-                                <div class="col-8"><strong>Payment Date:</strong></div>
-                                <div class="col-4 text-right"><?php echo htmlspecialchars($payment['payment_datetime']); ?></div>
-                            </div>
-                            <div class="row d-flex justify-content-between">
-                                <div class="col-8"><strong>Status:</strong></div>
-                                <div class="col-4 text-right"><?php echo htmlspecialchars($payment['payment_status']); ?></div>
-                            </div>
-                            <hr>
-
-                            <h5 class="card-title">Payment Items</h5>
-
-                            <?php
-                            // Initialize arrays to hold items by type
-                            $itemsByType = ['License' => [], 'Lesson' => [], 'Test' => []];
-
-                            // Fetch items and group them by type
-                            while ($detail = $resultDetails->fetch_assoc()) {
-                                $itemName = fetchItemName($conn, $detail['item_type'], $detail['item_id']);
-                                $itemsByType[$detail['item_type']][] = ['name' => $itemName, 'amount' => $detail['amount']];
-                            }
-
-                            // Display items grouped by type
-                            foreach ($itemsByType as $type => $items) {
-                                if (!empty($items)) {
-                                    if ($type != 'Test') {
-                                        // Display License and Lesson items with the item name beside the type and the amount right-aligned
-                                        echo "<div class='row d-flex justify-content-between'>
-                                            <div class='col-8'><strong>$type:</strong> {$items[0]['name']}</div>
-                                            <div class='col-4 text-right'>RM " . number_format($items[0]['amount'], 2) . "</div>
-                                        </div>";
-                                    } else {
-                                        // Display Test items with bullet points and the amount right-aligned
-                                        echo "<div class='row d-flex justify-content-between'>
-                                            <div class='col-8'><strong>$type:</strong></div>
-                                            <div class='col-4 text-right'></div>
-                                        </div>"; // Empty space for the 'Test:' label
-                                        foreach ($items as $item) {
-                                            echo "<div class='row d-flex justify-content-between'>
-                                                <div class='col-8'>- {$item['name']}</div>
-                                                <div class='col-4 text-right'>RM " . number_format($item['amount'], 2) . "</div>
-                                            </div>";
-                                        }
-                                    }
-                                }
-                            }
-                            ?>
-
-                        </div>
-
-                        <div class="card-footer text-center p-3"> <!-- Added p-3 class for padding -->
-                            <a href="../book_license/list_license.php" class="btn btn-primary">OK</a>
                         </div>
                     </div>
                 </div>
@@ -197,6 +176,29 @@ function fetchItemName($conn, $type, $id)
         </div>
     </div>
 </div>
+
+<style>
+    @media print {
+
+        .navbar,
+        .sidebar,
+        .footer,
+        .breadcrumbs,
+        .btn {
+            display: none !important;
+        }
+
+        .card {
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        .card-header {
+            color: #000 !important;
+            background-color: #fff !important;
+        }
+    }
+</style>
 
 <?php
 include '../../../include/footer.html';
