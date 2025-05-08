@@ -55,33 +55,23 @@ $user_id = $_SESSION['user_id'];
       <div class="row">
         <!-- Profile Card -->
         <div class="col-md-4">
-          <div class="card card-profile">
-            <div class="card-header" style="background-image: url('../../../assets/img/profile-bg.jpg')">
-              <div class="profile-picture">
-                <div class="avatar avatar-xl">
-                  <img src="../../../assets/img/profile-placeholder.jpg" alt="Student Profile" class="avatar-img rounded-circle">
+            <div class="card card-profile">
+              <div class="card-header" style="background-image: url('../../../assets/img/profile-bg.jpg')">
+                <div class="profile-picture">
+                  <div class="avatar avatar-xl">
+                    <span class="avatar-initial rounded-circle bg-primary"><?php echo substr($student['name'], 0, 1); ?></span>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div class="card-body">
-              <div class="user-profile text-center">
-                <div class="name"><?php echo htmlspecialchars($student['name']); ?></div>
-                <div class="job"><?php echo htmlspecialchars($student['student_id']); ?></div>
-                <div class="desc">Student</div>
-                <div class="social-media">
-                  <a class="btn btn-info btn-sm" href="mailto:<?php echo htmlspecialchars($student['email']); ?>">
-                    <i class="fa fa-envelope"></i> Email
-                  </a>
-                  <?php if (!empty($student['phone'])): ?>
-                  <a class="btn btn-primary btn-sm" href="tel:<?php echo htmlspecialchars($student['phone']); ?>">
-                    <i class="fa fa-phone"></i> Call
-                  </a>
-                  <?php endif; ?>
+              <div class="card-body">
+                <div class="user-profile text-center">
+                  <div class="name"><?php echo htmlspecialchars($student['name']); ?></div>
+                  <div class="job"><?php echo htmlspecialchars($student['student_id']); ?></div>
+                  <div class="desc">Student</div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
         
         <!-- Information Cards -->
         <div class="col-md-8">
@@ -195,3 +185,21 @@ $user_id = $_SESSION['user_id'];
 <?php
 include '../../../include/footer.html';
 ?>
+
+<style>
+  .avatar-initial {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    background-image: linear-gradient(135deg, #1572e8 0%, #4286f4 100%);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    transition: all 0.3s ease;
+  }
+</style>

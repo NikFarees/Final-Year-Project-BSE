@@ -58,6 +58,18 @@ if ($totalLicenses > 0) {
         $currentData = [];
         $currentData['license'] = $license;
         
+        // Get license status from issued_licenses table
+        $stmt = $conn->prepare("
+            SELECT status 
+            FROM issued_licenses 
+            WHERE student_license_id = ?
+        ");
+        $stmt->bind_param("s", $student_license_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $licenseStatusData = $result->fetch_assoc();
+        $currentData['license_status'] = $licenseStatusData ? $licenseStatusData['status'] : 'Not Available';
+        
         // Get lessons for this license
         $stmt = $conn->prepare("
             SELECT sl.*, u.name as instructor_name 
@@ -65,8 +77,10 @@ if ($totalLicenses > 0) {
             LEFT JOIN instructors i ON sl.instructor_id = i.instructor_id
             LEFT JOIN users u ON i.user_id = u.user_id
             WHERE sl.student_license_id = ?
-            ORDER BY sl.date ASC, sl.start_time ASC
+            ORDER BY 
+                CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(sl.student_lesson_name, ' ', -1), '/', 1) AS UNSIGNED) ASC
         ");
+         
         $stmt->bind_param("s", $student_license_id);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -92,8 +106,8 @@ if ($totalLicenses > 0) {
         
         // Restructure tests to group them by test_id
         $groupedTests = [];
-        while($test = $result->fetch_assoc()) {
-            if(!isset($groupedTests[$test['test_id']])) {
+        while ($test = $result->fetch_assoc()) {
+            if (!isset($groupedTests[$test['test_id']])) {
                 $groupedTests[$test['test_id']] = [
                     'test_name' => $test['test_name'],
                     'attempts' => []
@@ -108,20 +122,51 @@ if ($totalLicenses > 0) {
         $test_types = ['Computer Test', 'QTI Test', 'Circuit Test', 'On-Road Test'];
         $test_completed = array_fill_keys($test_types, false);
 
+        // Determine minimum required lessons based on lesson_id
+        $minimum_required_lessons = 4; // Default
+        $lesson_id = $license['lesson_id'];
+        if ($lesson_id == 'LES01' || $lesson_id == 'LES02') {
+            $minimum_required_lessons = 4;
+        } else if ($lesson_id == 'LES03' || $lesson_id == 'LES04') {
+            $minimum_required_lessons = 6;
+        }
+
         // Determine total lessons based on lesson_id (4 for LES01/LES02, 8 for LES03/LES04)
         $total_lessons = 4; // Default
-        $lesson_id = $license['lesson_id'];
         if ($lesson_id == 'LES03' || $lesson_id == 'LES04') {
             $total_lessons = 8;
         }
 
-        // Count completed lessons
+        // Count all regular lessons (excluding extra classes)
+        $regularLessonCount = 0;
+        foreach ($currentData['lessons'] as $lesson) {
+            if (strpos($lesson['student_lesson_name'], 'Extra Class') === false) {
+                $regularLessonCount++;
+            }
+        }
+
+        // Count completed lessons (only regular lessons, excluding extra classes)
         $completed_lessons = 0;
         foreach ($currentData['lessons'] as $lesson) {
-            if ($lesson['status'] === 'Completed') {
+            if ($lesson['status'] === 'Completed' && strpos($lesson['student_lesson_name'], 'Extra Class') === false) {
                 $completed_lessons++;
             }
         }
+
+        // Count attended lessons (only regular lessons, excluding extra classes)
+        $attended_lessons = 0;
+        foreach ($currentData['lessons'] as $lesson) {
+            if ($lesson['attendance_status'] === 'Attend' && strpos($lesson['student_lesson_name'], 'Extra Class') === false) {
+                $attended_lessons++;
+            }
+        }
+
+        // Check if attendance requirement is met
+        $attendance_requirement_met = ($attended_lessons >= $minimum_required_lessons);
+
+        // Calculate lesson completion percentage (based on completed/total regular lessons)
+        $lesson_completion_percentage = ($regularLessonCount > 0) ? 
+            min(100, ($completed_lessons / $regularLessonCount) * 100) : 0;
 
         // Count completed tests
         $completed_tests = 0;
@@ -138,8 +183,8 @@ if ($totalLicenses > 0) {
             }
         }
 
-        // Total milestones = 4 tests + total lessons
-        $total_milestones = 4 + $total_lessons;
+        // Total milestones = 4 tests + regular lessons
+        $total_milestones = 4 + $regularLessonCount;
 
         // Completed milestones = passed tests + completed lessons
         $completed_milestones = $completed_tests + $completed_lessons;
@@ -147,15 +192,20 @@ if ($totalLicenses > 0) {
         // Calculate progress percentage
         $progress_percentage = ($total_milestones > 0) ?
             round(($completed_milestones / $total_milestones) * 100, 2) : 0;
-        
+
         // Store calculated values
         $currentData['test_completed'] = $test_completed;
         $currentData['total_lessons'] = $total_lessons;
         $currentData['completed_lessons'] = $completed_lessons;
+        $currentData['attended_lessons'] = $attended_lessons;
+        $currentData['attendance_requirement_met'] = $attendance_requirement_met;
         $currentData['completed_tests'] = $completed_tests;
         $currentData['total_milestones'] = $total_milestones;
         $currentData['completed_milestones'] = $completed_milestones;
         $currentData['progress_percentage'] = $progress_percentage;
+        $currentData['minimum_required_lessons'] = $minimum_required_lessons;
+        $currentData['lesson_completion_percentage'] = $lesson_completion_percentage;
+        $currentData['regular_lesson_count'] = $regularLessonCount;
         
         // Add to license data array
         $licenseData[] = $currentData;
@@ -268,15 +318,6 @@ if ($totalLicenses > 0) {
                                                             title="" data-original-title="<?php echo $data['progress_percentage']; ?>%">
                                                         </div>
                                                     </div>
-
-                                                    <!-- Requirement Message -->
-                                                    <div class="alert alert-info mt-2 mb-3 py-2">
-                                                        <?php if ($data['license']['lesson_id'] == 'LES01' || $data['license']['lesson_id'] == 'LES02'): ?>
-                                                            <small><i class="fas fa-info-circle"></i> Student needs to complete 100% progress to get their license.</small>
-                                                        <?php else: ?>
-                                                            <small><i class="fas fa-info-circle"></i> Student needs to complete 83.33% progress to get their license.</small>
-                                                        <?php endif; ?>
-                                                    </div>
                                                 </div>
 
                                                 <!-- Timeline -->
@@ -335,41 +376,46 @@ if ($totalLicenses > 0) {
                                                         };
 
                                                         // Function to display test info
-                                                        $displayTestInfo = function($test, $formatDate, $getStatusClass, $getAttendanceClass) {
+                                                        $displayTestInfo = function ($test, $formatDate, $getStatusClass, $getAttendanceClass) {
                                                             $html = '';
                                                             $html .= '<p><span class="badge badge-' . $getStatusClass($test['status']) . '">' . $test['status'] . '</span>';
                                                             if (isset($test['score']) && $test['score'] !== null) {
                                                                 $html .= ' <span class="badge badge-info ml-2">Score: ' . $test['score'] . '</span>';
                                                             }
                                                             $html .= '</p>';
-                                                            
-                                                            $html .= '<p class="text-muted"><i class="far fa-calendar-alt"></i> ' . 
+
+                                                            $html .= '<p class="text-muted"><i class="far fa-calendar-alt"></i> ' .
                                                                 $formatDate($test['test_date'] ?? null, $test['start_time'] ?? null, $test['end_time'] ?? null) . '</p>';
-                                                            
+
                                                             if (isset($test['attendance_status'])) {
                                                                 $html .= '<p class="text-muted"><i class="fas fa-clipboard-check"></i> Attendance: ';
-                                                                $html .= '<span class="badge badge-' . $getAttendanceClass($test['attendance_status']) . '">' . 
+                                                                $html .= '<span class="badge badge-' . $getAttendanceClass($test['attendance_status']) . '">' .
                                                                     $test['attendance_status'] . '</span></p>';
                                                             }
-                                                            
+
                                                             if (isset($test['instructor_name']) && $test['instructor_name']) {
                                                                 $html .= '<p class="text-muted"><i class="fas fa-user"></i> Instructor: ' . $test['instructor_name'] . '</p>';
                                                             }
-                                                            
+
                                                             if (isset($test['comment']) && !empty($test['comment'])) {
                                                                 $html .= '<p class="text-muted"><i class="fas fa-comment"></i> Comment: ' . $test['comment'] . '</p>';
                                                             }
-                                                            
+
                                                             return $html;
                                                         };
 
                                                         // Display items in timeline with the correct sequence
                                                         $journey_sequence = [
-                                                            'Computer Test', 'Driving Lessons', 'QTI Test', 'Circuit Test', 'On-Road Test', 'License Certificate'
+                                                            'Computer Test',
+                                                            'Driving Lessons',
+                                                            'QTI Test',
+                                                            'Circuit Test',
+                                                            'On-Road Test',
+                                                            'License Certificate'
                                                         ];
-                                                        
+
                                                         // Function to get the correct test by type from grouped tests
-                                                        $getTestByType = function($groupedTests, $testType) {
+                                                        $getTestByType = function ($groupedTests, $testType) {
                                                             foreach ($groupedTests as $test_id => $testData) {
                                                                 if (strpos($testData['test_name'], $testType) !== false) {
                                                                     return $testData;
@@ -377,7 +423,7 @@ if ($totalLicenses > 0) {
                                                             }
                                                             return null;
                                                         };
-                                                        
+
                                                         // Loop through journey sequence to maintain order
                                                         foreach ($journey_sequence as $step) {
                                                             // Handle each step based on what it is
@@ -397,16 +443,30 @@ if ($totalLicenses > 0) {
                                                                 echo '</div>';
                                                                 echo '<div class="timeline-body">';
 
-                                                                // Show lesson completion progress
+                                                                // Show lesson completion progress as a percentage
                                                                 echo '<div class="progress-card mb-3">';
                                                                 echo '<div class="d-flex justify-content-between mb-1">';
-                                                                echo '<span class="text-muted">Lessons Completed</span>';
-                                                                echo '<span class="text-muted font-weight-bold">' . $data['completed_lessons'] . '/' . $data['total_lessons'] . '</span>';
+                                                                echo '<span class="text-muted">Lessons Completion</span>';
+                                                                echo '<span class="text-muted font-weight-bold">' . round($data['lesson_completion_percentage'], 1) . '%</span>';
                                                                 echo '</div>';
                                                                 echo '<div class="progress mb-2" style="height: 5px;">';
-                                                                $percent = ($data['total_lessons'] > 0) ? ($data['completed_lessons'] / $data['total_lessons']) * 100 : 0;
-                                                                echo '<div class="progress-bar bg-info" role="progressbar" style="width: ' . $percent . '%" aria-valuenow="' . $percent . '" aria-valuemin="0" aria-valuemax="100"></div>';
+                                                                echo '<div class="progress-bar bg-info" role="progressbar" style="width: ' . $data['lesson_completion_percentage'] . '%" aria-valuenow="' . $data['lesson_completion_percentage'] . '" aria-valuemin="0" aria-valuemax="100"></div>';
                                                                 echo '</div>';
+
+                                                                // Show attendance requirements status
+                                                                echo '<div class="d-flex justify-content-between align-items-center">';
+                                                                echo '<small class="text-muted">' . $data['completed_lessons'] . ' of ' . $data['regular_lesson_count'] . ' lessons completed</small>';
+
+                                                                // Display attendance status with badge
+                                                                if ($data['attendance_requirement_met']) {
+                                                                    echo '<span class="badge badge-success">Attendance Requirement Met</span>';
+                                                                } else {
+                                                                    echo '<span class="badge badge-warning">Need ' . ($data['minimum_required_lessons'] - $data['attended_lessons']) . ' more attended lessons</span>';
+                                                                }
+                                                                echo '</div>';
+
+                                                                // Show attendance details
+                                                                echo '<small class="text-muted d-block mt-1">' . $data['attended_lessons'] . ' of ' . $data['minimum_required_lessons'] . ' minimum required attendances</small>';
                                                                 echo '</div>';
 
                                                                 // Display individual lessons in collapsible
@@ -422,8 +482,23 @@ if ($totalLicenses > 0) {
                                                                 echo '<thead><tr><th>Lesson</th><th>Date & Time</th><th>Status</th><th>Attendance</th><th>Instructor</th></tr></thead>';
                                                                 echo '<tbody>';
 
+                                                                // Before entering the loop, separate regular and extra lessons
+                                                                $regularLessons = [];
+                                                                $extraLessons = [];
+                                                                $extraLessonsCount = 0;
+
+                                                                foreach ($data['lessons'] as $lessonItem) {
+                                                                    if (strpos($lessonItem['student_lesson_name'], 'Extra Class') !== false) {
+                                                                        $extraLessons[] = $lessonItem;
+                                                                        $extraLessonsCount++;
+                                                                    } else {
+                                                                        $regularLessons[] = $lessonItem;
+                                                                    }
+                                                                }
+
+                                                                // Now display regular lessons first
                                                                 $lesson_count = 1;
-                                                                foreach ($data['lessons'] as $lesson) {
+                                                                foreach ($regularLessons as $lesson) {
                                                                     echo '<tr>';
                                                                     echo '<td>Lesson ' . $lesson_count . '/' . $data['total_lessons'] . '</td>';
                                                                     echo '<td>' . $formatDate($lesson['date'], $lesson['start_time'], $lesson['end_time']) . '</td>';
@@ -434,13 +509,48 @@ if ($totalLicenses > 0) {
                                                                     $lesson_count++;
                                                                 }
 
+                                                                // Then display extra lessons
+                                                                foreach ($extraLessons as $lesson) {
+                                                                    // Extract extra lesson number
+                                                                    preg_match('/Extra Class (\d+)/', $lesson['student_lesson_name'], $matches);
+                                                                    $extraLessonNumber = isset($matches[1]) ? $matches[1] : '?';
+
+                                                                    echo '<tr>';
+                                                                    echo '<td>Extra Lesson ' . $extraLessonNumber . '/' . $extraLessonsCount . '</td>';
+                                                                    echo '<td>' . $formatDate($lesson['date'], $lesson['start_time'], $lesson['end_time']) . '</td>';
+                                                                    echo '<td><span class="badge badge-' . $getLessonStatusClass($lesson['status']) . '">' . $lesson['status'] . '</span></td>';
+                                                                    echo '<td><span class="badge badge-' . $getAttendanceClass($lesson['attendance_status']) . '">' . $lesson['attendance_status'] . '</span></td>';
+                                                                    echo '<td>' . ($lesson['instructor_name'] ?? 'Not Assigned') . '</td>';
+                                                                    echo '</tr>';
+                                                                }
+
                                                                 echo '</tbody></table>';
                                                                 echo '</div></div></div></div></div>';
                                                                 echo '</div></div></div>';
                                                             } else if ($step === 'License Certificate') {
-                                                                // Display License Certificate (Final Step)
+                                                                // Get license status
+                                                                $licenseStatus = $data['license_status'];
+                                                                
+                                                                // Display License Certificate with status-specific content
                                                                 echo '<div class="timeline-item">';
-                                                                echo '<div class="timeline-badge bg-secondary">';
+                                                                echo '<div class="timeline-badge ';
+                                                                
+                                                                // Set badge color based on status
+                                                                switch ($licenseStatus) {
+                                                                    case 'Approved':
+                                                                        echo 'bg-success';
+                                                                        break;
+                                                                    case 'Pending':
+                                                                        echo 'bg-warning';
+                                                                        break;
+                                                                    case 'Issued':
+                                                                        echo 'bg-primary';
+                                                                        break;
+                                                                    default:
+                                                                        echo 'bg-secondary';
+                                                                }
+                                                                
+                                                                echo '">';
                                                                 echo '<i class="fas fa-certificate"></i>';
                                                                 echo '</div>';
                                                                 echo '<div class="timeline-panel">';
@@ -449,8 +559,28 @@ if ($totalLicenses > 0) {
                                                                 echo '<p><small class="text-muted"><i class="fas fa-tag"></i> Certification</small></p>';
                                                                 echo '</div>';
                                                                 echo '<div class="timeline-body">';
-                                                                echo '<p><span class="badge badge-secondary">Not Yet Available</span></p>';
-                                                                echo '<p class="text-muted">Student must complete all tests and lessons to receive license certificate.</p>';
+                                                                
+                                                                // Set message based on license status
+                                                                echo '<p><span class="badge badge-';
+                                                                
+                                                                switch ($licenseStatus) {
+                                                                    case 'Approved':
+                                                                        echo 'success">Ready for Collection</span></p>';
+                                                                        echo '<p class="text-muted">License has been approved and is ready for collection at the school.</p>';
+                                                                        break;
+                                                                    case 'Pending':
+                                                                        echo 'warning">Processing</span></p>';
+                                                                        echo '<p class="text-muted">License is currently being processed by administrators. Waiting for approval.</p>';
+                                                                        break;
+                                                                    case 'Issued':
+                                                                        echo 'primary">Collected</span></p>';
+                                                                        echo '<p class="text-muted">Student has successfully collected their license.</p>';
+                                                                        break;
+                                                                    default:
+                                                                        echo 'secondary">Not Available</span></p>';
+                                                                        echo '<p class="text-muted">Student must complete all tests and lessons to receive license certificate.</p>';
+                                                                }
+                                                                
                                                                 echo '</div>';
                                                                 echo '</div>';
                                                                 echo '</div>';
@@ -480,7 +610,7 @@ if ($totalLicenses > 0) {
                                                                 } else if (strpos($testName, 'On-Road') !== false) {
                                                                     $icon_class = 'fas fa-car-side';
                                                                 }
-                                                                ?>
+                                                        ?>
                                                                 
                                                                 <div class="timeline-item">
                                                                     <div class="timeline-badge bg-<?php echo $latestAttempt ? $getStatusClass($testStatus) : 'secondary'; ?>">

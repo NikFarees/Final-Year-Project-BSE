@@ -103,6 +103,67 @@ if (!$student) {
                $lesson['status'] === 'Completed' && 
                $lesson['schedule_status'] === 'Assigned';
     });
+    
+    // Get all licenses and check eligibility for QTI test
+    $licenses_stmt = $conn->prepare("
+        SELECT 
+            sl.student_license_id,
+            l.license_name,
+            les.lesson_id,
+            les.lesson_name,
+            COUNT(st_les.student_lesson_id) AS total_lessons,
+            SUM(CASE WHEN st_les.attendance_status = 'Attend' THEN 1 ELSE 0 END) AS attended_lessons,
+            SUM(CASE WHEN st_les.status = 'Completed' THEN 1 ELSE 0 END) AS completed_lessons
+        FROM student_licenses sl
+        INNER JOIN licenses l ON sl.license_id = l.license_id
+        INNER JOIN lessons les ON sl.lesson_id = les.lesson_id
+        LEFT JOIN student_lessons st_les ON sl.student_license_id = st_les.student_license_id
+        WHERE sl.student_id = ?
+        GROUP BY sl.student_license_id, l.license_name, les.lesson_id, les.lesson_name
+    ");
+    $licenses_stmt->bind_param("s", $student_id);
+    $licenses_stmt->execute();
+    $licenses_result = $licenses_stmt->get_result();
+    
+    // Store the eligibility alerts
+    $eligibility_alerts = [];
+    
+    // Loop through each license and check eligibility
+    while ($license = $licenses_result->fetch_assoc()) {
+        $student_license_id = $license['student_license_id'];
+        $license_name = $license['license_name'];
+        $lesson_id = $license['lesson_id'];
+        $lesson_name = $license['lesson_name'];
+        $total_lessons = $license['total_lessons'];
+        $attended_lessons = $license['attended_lessons'];
+        $completed_lessons = $license['completed_lessons'];
+        
+        // Skip if no lessons are scheduled yet
+        if ($total_lessons == 0) continue;
+        
+        // Check if all lessons are completed
+        if ($completed_lessons == $total_lessons) {
+            // Determine required lessons based on lesson_id
+            $required_lessons = 0;
+            if ($lesson_id == 'LES01' || $lesson_id == 'LES02') {
+                $required_lessons = $total_lessons; // All lessons required
+            } else if ($lesson_id == 'LES03' || $lesson_id == 'LES04') {
+                $required_lessons = min(6, $total_lessons); // At least 6 out of 8
+            }
+            
+            // Check if attendance requirement is met
+            if ($attended_lessons < $required_lessons) {
+                $lessons_needed = $required_lessons - $attended_lessons;
+                
+                // Store alert info
+                $eligibility_alerts[] = [
+                    'student_license_id' => $student_license_id,
+                    'license_name' => $license_name,
+                    'lessons_needed' => $lessons_needed
+                ];
+            }
+        }
+    }
 }
 ?>
 
@@ -142,6 +203,26 @@ if (!$student) {
                     </button>
                 </div>
                 <?php endif; ?>
+                
+                <!-- QTI Eligibility Alerts - NOT auto closing -->
+                <?php if (!empty($eligibility_alerts)): ?>
+                    <?php foreach ($eligibility_alerts as $alert): ?>
+                        <div class="alert alert-warning qti-alert" role="alert">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>
+                                    ⚠️ <strong><?php echo htmlspecialchars($alert['license_name']); ?>:</strong> You need to attend <?php echo $alert['lessons_needed']; ?> more lesson(s) to qualify for QTI Test.
+                                </span>
+                                <form action="confirm_add_lesson.php" method="POST">
+                                    <input type="hidden" name="student_license_id" value="<?php echo $alert['student_license_id']; ?>">
+                                    <input type="hidden" name="lessons_needed" value="<?php echo $alert['lessons_needed']; ?>">
+                                    <button type="submit" class="btn btn-sm btn-primary">
+                                        Add <?php echo $alert['lessons_needed']; ?> Lesson(s)
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
 
                 <!-- Schedule Overview Card -->
                 <div class="row">
@@ -149,6 +230,8 @@ if (!$student) {
                         <div class="card">
                             <div class="card-header d-flex justify-content-between align-items-center">
                                 <div class="card-title">Lesson List</div>
+                                <!-- button for lesson addition here-->
+
                                 <button type="button" class="btn btn-sm btn-outline-secondary" id="lesson-toggle-btn">
                                     <i class="fas fa-minus"></i>
                                 </button>
@@ -387,7 +470,8 @@ include '../../../include/footer.html';
     });
 
     $(document).ready(function() {
-        // Auto-dismiss alert after 5 seconds
+        // Auto-dismiss alert after 5 seconds - ONLY for alerts with dismissible class
+        // This ensures our QTI eligibility alerts won't be auto-dismissed
         setTimeout(function() {
             $('.alert-dismissible').alert('close');
         }, 5000);

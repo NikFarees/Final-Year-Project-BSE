@@ -8,7 +8,6 @@ $unassigned_query = "
         sl.student_license_id,
         u.name AS student_name,
         l.license_name,
-        sl.progress,
         COUNT(sls.student_lesson_id) AS total_lesson
     FROM student_licenses sl
     JOIN students s ON sl.student_id = s.student_id
@@ -22,7 +21,7 @@ $unassigned_query = "
         AND sls.start_time IS NULL
         AND sls.end_time IS NULL
         AND sls.schedule_status = 'Unassigned'
-    GROUP BY sl.student_license_id, u.name, l.license_name, sl.progress
+    GROUP BY sl.student_license_id, u.name, l.license_name
     HAVING total_lesson > 0
 ";
 $unassigned_result = $conn->query($unassigned_query);
@@ -34,7 +33,6 @@ $assigned_query = "
         sl.student_license_id,
         u.name AS student_name,
         l.license_name,
-        sl.progress,
         SUM(CASE 
             WHEN sls.status = 'Pending'
             AND sls.instructor_id IS NOT NULL
@@ -51,7 +49,7 @@ $assigned_query = "
     JOIN licenses l ON sl.license_id = l.license_id
     LEFT JOIN student_lessons sls 
         ON sl.student_license_id = sls.student_license_id
-    GROUP BY sl.student_license_id, u.name, l.license_name, sl.progress
+    GROUP BY sl.student_license_id, u.name, l.license_name
     HAVING lesson_left > 0
 ";
 $assigned_result = $conn->query($assigned_query);

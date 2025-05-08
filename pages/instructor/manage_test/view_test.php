@@ -186,12 +186,26 @@ if ($test_session_id) {
                           </span>
                         </td>
                         <td>
-                          <button class="btn btn-warning btn-sm mark-attendance"
-                            data-session-id="<?php echo htmlspecialchars($student['student_test_session_id']); ?>"
-                            data-current-status="<?php echo htmlspecialchars($student['attendance_status']); ?>">
-                            Mark Attendance
-                          </button>
-                          <a href="edit_score.php?student_test_id=<?php echo htmlspecialchars($student['student_test_id']); ?>" class="btn btn-primary btn-sm">Edit Score</a>
+                          <?php if ($session_type !== 'past'): ?>
+                            <!-- Only show attendance button for non-completed sessions -->
+                            <button class="btn btn-warning btn-sm mark-attendance"
+                              data-session-id="<?php echo htmlspecialchars($student['student_test_session_id']); ?>"
+                              data-current-status="<?php echo htmlspecialchars($student['attendance_status']); ?>">
+                              Mark Attendance
+                            </button>
+                          <?php endif; ?>
+
+                          <?php if ($student['test_status'] === 'Passed' || $student['test_status'] === 'Failed'): ?>
+                            <!-- Test already marked - show disabled button -->
+                            <button class="btn btn-secondary btn-sm" disabled title="This test has already been marked">
+                              Test Marked
+                            </button>
+                          <?php else: ?>
+                            <!-- Test not marked yet - show active button -->
+                            <a href="edit_score.php?student_test_id=<?php echo htmlspecialchars($student['student_test_id']); ?>&test_session_id=<?php echo htmlspecialchars($test_session_id); ?>" class="btn btn-primary btn-sm">
+                              Edit Score
+                            </a>
+                          <?php endif; ?>
                         </td>
                       <?php endif; ?>
                     </tr>
@@ -213,11 +227,11 @@ include '../../../include/footer.html';
 <script>
   $(document).ready(function() {
     $("#student-list-table").DataTable({});
-    
+
     // Toggle functionality for test details card
     $('#toggle-details-btn').click(function() {
       $('#details-card-body').slideToggle(); // Slide up/down the body
-      
+
       // Toggle the icon
       var icon = $(this).find('i');
       if (icon.hasClass('fa-minus')) {
@@ -226,11 +240,11 @@ include '../../../include/footer.html';
         icon.removeClass('fa-plus').addClass('fa-minus');
       }
     });
-    
+
     // Toggle functionality for student list card
     $('#toggle-student-list-btn').click(function() {
       $('#student-list-card-body').slideToggle(); // Slide up/down the body
-      
+
       // Toggle the icon
       var icon = $(this).find('i');
       if (icon.hasClass('fa-minus')) {
@@ -308,7 +322,7 @@ include '../../../include/footer.html';
   .card-header {
     transition: all 0.3s ease;
   }
-  
+
   .btn-outline-secondary:focus {
     box-shadow: none;
   }

@@ -51,7 +51,7 @@ $test_fee = $test['test_fee'];
     <div class="page-inner">
         <!-- Breadcrumbs -->
         <div class="page-header">
-            <h4 class="page-title">Confirm Retest</h4>
+            <h4 class="page-title">My Test</h4>
             <ul class="breadcrumbs">
                 <li class="nav-home">
                     <a href="/pages/student/dashboard.php">
@@ -111,8 +111,6 @@ $test_fee = $test['test_fee'];
                                     </div>
                                 </div>
 
-                                <hr>
-
                                 <!-- Payment Option -->
                                 <div class="row mb-3">
                                     <div class="col-md-12">
@@ -133,10 +131,10 @@ $test_fee = $test['test_fee'];
                                 <!-- Submit and cancel buttons -->
                                 <div class="text-center mt-4">
                                     <a href="list_test.php" class="btn btn-danger mr-2">
-                                        <i class="fas fa-times"></i> Cancel
+                                        Cancel
                                     </a>
                                     <button type="submit" class="btn btn-success">
-                                        <i class="fas fa-check"></i> Confirm & Pay
+                                        Confirm & Pay
                                     </button>
                                 </div>
                             </form>

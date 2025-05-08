@@ -40,18 +40,6 @@ if ($totalLicenses > 0) {
         $currentData = [];
         $currentData['license'] = $license;
 
-        // Get license status from issued_licenses table
-        $stmt = $conn->prepare("
-            SELECT status 
-            FROM issued_licenses 
-            WHERE student_license_id = ?
-        ");
-        $stmt->bind_param("s", $student_license_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $licenseStatusData = $result->fetch_assoc();
-        $currentData['license_status'] = $licenseStatusData ? $licenseStatusData['status'] : 'Not Available';
-
         // Get lessons for this license
         $stmt = $conn->prepare("
             SELECT sl.*, u.name as instructor_name 
@@ -97,6 +85,17 @@ if ($totalLicenses > 0) {
             $groupedTests[$test['test_id']]['attempts'][] = $test;
         }
         $currentData['tests'] = $groupedTests;
+
+        // Get certificate information
+        $stmt = $conn->prepare("
+            SELECT * FROM issued_licenses 
+            WHERE student_license_id = ?
+        ");
+        $stmt->bind_param("s", $student_license_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $certificate = $result->fetch_assoc();
+        $currentData['certificate'] = $certificate;
 
         // Calculate progress dynamically
         // Define test types for progress tracking
@@ -146,7 +145,7 @@ if ($totalLicenses > 0) {
         $attendance_requirement_met = ($attended_lessons >= $minimum_required_lessons);
 
         // Calculate lesson completion percentage (based on completed/total regular lessons)
-        $lesson_completion_percentage = ($regularLessonCount > 0) ?
+        $lesson_completion_percentage = ($regularLessonCount > 0) ? 
             min(100, ($completed_lessons / $regularLessonCount) * 100) : 0;
 
         // Count completed tests
@@ -174,6 +173,12 @@ if ($totalLicenses > 0) {
         $progress_percentage = ($total_milestones > 0) ?
             round(($completed_milestones / $total_milestones) * 100, 2) : 0;
 
+        // Determine eligibility for certificate
+        $isEligible = ($attendance_requirement_met && 
+               ($lesson_completion_percentage >= 100) && 
+               ($completed_tests >= 3));
+        $currentData['certificate_eligible'] = $isEligible;
+
         // Store calculated values
         $currentData['test_completed'] = $test_completed;
         $currentData['total_lessons'] = $total_lessons;
@@ -192,7 +197,6 @@ if ($totalLicenses > 0) {
         $licenseData[] = $currentData;
     }
 }
-
 ?>
 
 <div class="container">
@@ -331,6 +335,20 @@ if ($totalLicenses > 0) {
                                                             }
                                                         };
 
+                                                        $getCertStatusClass = function ($status) {
+                                                            switch ($status) {
+                                                                case 'Issued':
+                                                                    return 'success';
+                                                                case 'Approved':
+                                                                    return 'info';
+                                                                case 'Pending':
+                                                                    return 'warning';
+                                                                case 'Not Available':
+                                                                default:
+                                                                    return 'secondary';
+                                                            }
+                                                        };
+
                                                         // Format test date
                                                         $formatDate = function ($date, $start_time, $end_time) {
                                                             if (!$date) return 'Not Scheduled';
@@ -338,6 +356,12 @@ if ($totalLicenses > 0) {
                                                             $formatted_start = date('h:i A', strtotime($start_time));
                                                             $formatted_end = date('h:i A', strtotime($end_time));
                                                             return "$formatted_date, $formatted_start - $formatted_end";
+                                                        };
+
+                                                        // Format single date
+                                                        $formatSingleDate = function ($date) {
+                                                            if (!$date) return 'Not Available';
+                                                            return date('d M Y', strtotime($date));
                                                         };
 
                                                         // Function to display test info
@@ -493,29 +517,24 @@ if ($totalLicenses > 0) {
                                                                 echo '</div></div></div></div></div>';
                                                                 echo '</div></div></div>';
                                                             } else if ($step === 'License Certificate') {
-                                                                // Get license status
-                                                                $licenseStatus = $data['license_status'];
-
-                                                                // Display License Certificate with status-specific content
-                                                                echo '<div class="timeline-item">';
-                                                                echo '<div class="timeline-badge ';
-
-                                                                // Set badge color based on status
-                                                                switch ($licenseStatus) {
-                                                                    case 'Approved':
-                                                                        echo 'bg-success';
-                                                                        break;
-                                                                    case 'Pending':
-                                                                        echo 'bg-warning';
-                                                                        break;
-                                                                    case 'Issued':
-                                                                        echo 'bg-primary';
-                                                                        break;
-                                                                    default:
-                                                                        echo 'bg-secondary';
+                                                                // Get certificate status
+                                                                $certStatus = 'Not Available';
+                                                                $certId = null;
+                                                                $certDate = null;
+                                                                $canRequest = $data['certificate_eligible'] && empty($data['certificate']);
+                                                                
+                                                                if (!empty($data['certificate'])) {
+                                                                    $certStatus = $data['certificate']['status'];
+                                                                    $certDate = $data['certificate']['issued_date'];
+                                                                    $certId = $data['certificate']['issued_license_id'];
+                                                                    $student_license_id = $data['certificate']['student_license_id'];
+                                                                } else {
+                                                                    $student_license_id = $data['license']['student_license_id'];
                                                                 }
-
-                                                                echo '">';
+                                                                
+                                                                // Display License Certificate
+                                                                echo '<div class="timeline-item">';
+                                                                echo '<div class="timeline-badge bg-' . $getCertStatusClass($certStatus) . '">';
                                                                 echo '<i class="fas fa-certificate"></i>';
                                                                 echo '</div>';
                                                                 echo '<div class="timeline-panel">';
@@ -524,31 +543,51 @@ if ($totalLicenses > 0) {
                                                                 echo '<p><small class="text-muted"><i class="fas fa-tag"></i> Certification</small></p>';
                                                                 echo '</div>';
                                                                 echo '<div class="timeline-body">';
-
-                                                                // Set message based on license status
-                                                                echo '<p><span class="badge badge-';
-
-                                                                switch ($licenseStatus) {
-                                                                    case 'Approved':
-                                                                        echo 'success">Ready for Collection</span></p>';
-                                                                        echo '<p class="text-muted">Your license has been approved and is ready for collection at the school.</p>';
-                                                                        break;
-                                                                    case 'Pending':
-                                                                        echo 'warning">Processing</span></p>';
-                                                                        echo '<p class="text-muted">Your license is currently being processed by our administrators. Please wait for approval.</p>';
-                                                                        break;
-                                                                    case 'Issued':
-                                                                        echo 'primary">Collected</span></p>';
-                                                                        echo '<p class="text-muted">You have successfully collected your license. Safe driving!</p>';
-                                                                        break;
-                                                                    default:
-                                                                        echo 'secondary">Not Available</span></p>';
-                                                                        echo '<p class="text-muted">You must complete all lessons and tests to be eligible for your license certificate.</p>';
+                                                                
+                                                                // Show status badge
+                                                                echo '<p><span class="badge badge-' . $getCertStatusClass($certStatus) . '">' . $certStatus . '</span></p>';
+                                                                
+                                                                // Show appropriate message based on status
+                                                                if ($certStatus === 'Issued') {
+                                                                    // Certificate has been issued
+                                                                    echo '<p class="text-success"><i class="fas fa-check-circle"></i> Your license certificate has been issued.</p>';
+                                                                    if ($certDate) {
+                                                                        echo '<p class="text-muted"><i class="far fa-calendar-alt"></i> Issue Date: ' . $formatSingleDate($certDate) . '</p>';
+                                                                    }
+                                                                    if ($certId) {
+                                                                        echo '<p class="text-muted"><i class="fas fa-id-card"></i> Certificate ID: ' . $certId . '</p>';
+                                                                    }
+                                                                    echo '<div class="mt-3">';
+                                                                    echo '<a href="/pages/student/certificates/download.php?id=' . $certId . '" class="btn btn-sm btn-outline-success"><i class="fas fa-download"></i> Download Certificate</a>';
+                                                                    echo '</div>';
+                                                                } else if ($certStatus === 'Approved' || $certStatus === 'Pending') {
+                                                                    // Certificate is being processed
+                                                                    echo '<p class="text-muted">Your certificate request is being processed.</p>';
+                                                                    if ($certStatus === 'Approved') {
+                                                                        echo '<p class="text-info"><i class="fas fa-info-circle"></i> Your certificate has been approved and will be issued soon.</p>';
+                                                                    } else {
+                                                                        echo '<p class="text-warning"><i class="fas fa-clock"></i> Your request is pending approval.</p>';
+                                                                    }
+                                                                } else if ($canRequest) {
+                                                                    // Eligible for certificate - just show message without request button
+                                                                    echo '<p class="text-success"><i class="fas fa-check-circle"></i> You are eligible for your license certificate!</p>';
+                                                                    echo '<div class="alert alert-info mt-2">';
+                                                                    echo '<p class="mb-0"><i class="fas fa-info-circle"></i> Your certificate will be processed by the admin.</p>';
+                                                                    echo '</div>';
+                                                                } else {
+                                                                    // Not eligible yet
+                                                                    echo '<div class="alert alert-light mt-2">';
+                                                                    echo '<p class="mb-2">To request your certificate, you need to:</p>';
+                                                                    echo '<ul class="mb-0">';
+                                                                    echo '<li>Complete all lessons (current: ' . $data['lesson_completion_percentage'] . '%)</li>';
+                                                                    echo '<li>Meet minimum attendance requirement (current: ' . 
+                                                                        ($data['attendance_requirement_met'] ? '<span class="text-success">Met</span>' : '<span class="text-warning">Not met</span>') . ')</li>';
+                                                                    echo '<li>Pass required tests (current: ' . $data['completed_tests'] . ' of 4)</li>';
+                                                                    echo '</ul>';
+                                                                    echo '</div>';
                                                                 }
-
-                                                                echo '</div>';
-                                                                echo '</div>';
-                                                                echo '</div>';
+                                                                
+                                                                echo '</div></div></div>';
                                                             } else {
                                                                 // This is a test type
                                                                 $testData = $getTestByType($data['tests'], $step);

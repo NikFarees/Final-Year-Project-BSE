@@ -78,7 +78,6 @@ CREATE TABLE student_licenses (
     lesson_id VARCHAR(10) NOT NULL,
     student_id VARCHAR(20) NOT NULL,
     license_id VARCHAR(10) NOT NULL,  
-    progress INT DEFAULT 0,
     FOREIGN KEY (lesson_id) REFERENCES lessons(lesson_id) ON DELETE CASCADE,
     FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE,
     FOREIGN KEY (license_id) REFERENCES licenses(license_id) ON DELETE CASCADE
@@ -242,6 +241,16 @@ CREATE TABLE feedback_replies (
     FOREIGN KEY (admin_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
+-- IssuedLicense Table
+CREATE TABLE issued_licenses (
+    issued_license_id VARCHAR(20) PRIMARY KEY,
+    student_license_id VARCHAR(20) NOT NULL,
+    issued_date DATE,
+    issued_time TIME,
+    status ENUM('Not Available', 'Pending', 'Approved', 'Issued') DEFAULT 'Not Available',
+    FOREIGN KEY (student_license_id) REFERENCES student_licenses(student_license_id) ON DELETE CASCADE
+);
+
 -----------------------------
 
 -- RefundRequests Table
@@ -275,12 +284,4 @@ CREATE TABLE lesson_change_requests (
     FOREIGN KEY (student_lesson_id) REFERENCES student_lessons(student_lesson_id) ON DELETE CASCADE
 );
 
--- IssuedLicense Table
-CREATE TABLE issued_licenses (
-    issued_license_id INT AUTO_INCREMENT PRIMARY KEY,
-    student_license_id VARCHAR(20) NOT NULL,
-    issued_date DATE NOT NULL,
-    issued_time TIME NOT NULL,
-    status ENUM('Issued', 'Pending', 'Revoked') DEFAULT 'Pending',
-    FOREIGN KEY (student_license_id) REFERENCES student_licenses(student_license_id) ON DELETE CASCADE
-);
+

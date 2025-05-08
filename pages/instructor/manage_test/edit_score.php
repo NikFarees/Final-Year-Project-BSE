@@ -5,27 +5,28 @@ include '../../../database/db_connection.php';
 // Get the student_test_id from the query parameter
 $student_test_id = $_GET['student_test_id'] ?? null;
 
-function updateFollowUpTestEligibility($conn, $student_license_id, $status) {
-    // Set the appropriate status for follow-up tests based on TES02 result
-    $followup_status = ($status === 'Passed') ? 'Pending' : 'Ineligible';
-    
-    // Update TES03 and TES04 status for this student's license
-    $update_query = $conn->prepare("
+function updateFollowUpTestEligibility($conn, $student_license_id, $status)
+{
+  // Set the appropriate status for follow-up tests based on TES02 result
+  $followup_status = ($status === 'Passed') ? 'Pending' : 'Ineligible';
+
+  // Update TES03 and TES04 status for this student's license
+  $update_query = $conn->prepare("
         UPDATE student_tests 
         SET status = ?, schedule_status = 'Unassigned'
         WHERE student_license_id = ? 
         AND test_id IN ('TES03', 'TES04')
     ");
-    
-    if (!$update_query) {
-        return false;
-    }
-    
-    $update_query->bind_param("ss", $followup_status, $student_license_id);
-    $update_query->execute();
-    
-    // Return number of rows affected
-    return $update_query->affected_rows;
+
+  if (!$update_query) {
+    return false;
+  }
+
+  $update_query->bind_param("ss", $followup_status, $student_license_id);
+  $update_query->execute();
+
+  // Return number of rows affected
+  return $update_query->affected_rows;
 }
 
 if ($student_test_id) {
@@ -70,46 +71,43 @@ if ($student_test_id) {
 
     // Start transaction for data integrity
     $conn->begin_transaction();
-    
+
     try {
-        // Update the student test record
-        $update_query = $conn->prepare("
+      // Update the student test record
+      $update_query = $conn->prepare("
                 UPDATE student_tests 
                 SET score = ?, status = ?, comment = ? 
                 WHERE student_test_id = ?
             ");
-        $update_query->bind_param("dsss", $new_score, $status, $comments, $student_test_id);
+      $update_query->bind_param("dsss", $new_score, $status, $comments, $student_test_id);
 
-        if ($update_query->execute()) {
-            // Update student_lessons status based on the student_tests status
-            $lesson_status = ($status === 'Passed') ? 'Pending' : 'Ineligible';
-            $update_lessons_query = $conn->prepare("
+      if ($update_query->execute()) {
+        // Update student_lessons status based on the student_tests status
+        $lesson_status = ($status === 'Passed') ? 'Pending' : 'Ineligible';
+        $update_lessons_query = $conn->prepare("
                     UPDATE student_lessons 
                     SET status = ? 
                     WHERE student_license_id = ?
                 ");
-            $update_lessons_query->bind_param("ss", $lesson_status, $student_test['student_license_id']);
-            $update_lessons_query->execute();
-            
-            // If this is TES02, update follow-up tests eligibility (TES03 and TES04)
-            $affected_rows = 0;
-            if ($student_test['test_id'] === 'TES02') {
-                $affected_rows = updateFollowUpTestEligibility(
-                    $conn, 
-                    $student_test['student_license_id'], 
-                    $status
-                );
-            }
-            
-            // Commit all changes
-            $conn->commit();
-            
-            $success_message = 'Score updated successfully!';
-            if ($student_test['test_id'] === 'TES02') {
-                $success_message .= ' Also updated eligibility for ' . $affected_rows . ' follow-up tests.';
-            }
-            
-            echo "<script>
+        $update_lessons_query->bind_param("ss", $lesson_status, $student_test['student_license_id']);
+        $update_lessons_query->execute();
+
+        // If this is TES02, update follow-up tests eligibility (TES03 and TES04)
+        $affected_rows = 0;
+        if ($student_test['test_id'] === 'TES02') {
+          $affected_rows = updateFollowUpTestEligibility(
+            $conn,
+            $student_test['student_license_id'],
+            $status
+          );
+        }
+
+        // Commit all changes
+        $conn->commit();
+
+        $success_message = 'Score updated successfully!';
+
+        echo "<script>
                     document.addEventListener('DOMContentLoaded', function() {
                         Swal.fire({
                             title: 'Success',
@@ -117,16 +115,15 @@ if ($student_test_id) {
                             icon: 'success',
                             confirmButtonText: 'OK'
                         }).then(() => {
-                            window.location.href = '/pages/instructor/manage_test/view_test.php?test_session_id=" . htmlspecialchars($student_test['test_session_id']) . "';
-                        });
+                            window.location.href = '/pages/instructor/manage_test/view_test.php?test_session_id=" . htmlspecialchars($_GET['test_session_id']) . "&marked_test_id=" . htmlspecialchars($student_test_id) . "';                        });
                     });
                 </script>";
-        }
+      }
     } catch (Exception $e) {
-        // Roll back on error
-        $conn->rollback();
-        
-        echo "<script>
+      // Roll back on error
+      $conn->rollback();
+
+      echo "<script>
                 document.addEventListener('DOMContentLoaded', function() {
                     Swal.fire({
                         title: 'Error',
@@ -255,6 +252,7 @@ if ($student_test_id) {
   document.addEventListener('DOMContentLoaded', function() {
     const scoreInput = document.getElementById('score');
     const statusInput = document.getElementById('status');
+    const scoreForm = document.querySelector('form');
 
     // Add an event listener to the score input field
     scoreInput.addEventListener('input', function() {
@@ -275,6 +273,26 @@ if ($student_test_id) {
       } else {
         statusInput.value = ''; // Clear the status if the input is invalid
       }
+    });
+
+    // Add confirmation before submitting
+    scoreForm.addEventListener('submit', function(event) {
+      event.preventDefault();
+
+      Swal.fire({
+        title: 'Are you sure?',
+        text: "Once submitted, this score cannot be changed afterward!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, save it!'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Submit the form if user confirms
+          scoreForm.submit();
+        }
+      });
     });
   });
 </script>

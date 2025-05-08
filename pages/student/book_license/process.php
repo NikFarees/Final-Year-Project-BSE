@@ -63,6 +63,18 @@ try {
     $insert_license_stmt->bind_param("ssss", $student_license_id, $lesson_id, $student_id, $license_id);
     $insert_license_stmt->execute();
 
+    // Generate issued_license_id and insert into issued_licenses
+    $issued_license_count_query = $conn->query("SELECT MAX(CAST(SUBSTRING(issued_license_id, 6, 2) AS UNSIGNED)) AS max_id FROM issued_licenses");
+    $issued_license_count_row = $issued_license_count_query->fetch_assoc();
+    $issued_license_count = $issued_license_count_row['max_id'] ? $issued_license_count_row['max_id'] + 1 : 1;
+    $issued_license_id = sprintf('ISLIC%02d%s', $issued_license_count, $date_format);
+
+    // Insert into issued_licenses with default Not Available status
+    $insert_issued_license_sql = "INSERT INTO issued_licenses (issued_license_id, student_license_id, status) VALUES (?, ?, 'Not Available')";
+    $insert_issued_license_stmt = $conn->prepare($insert_issued_license_sql);
+    $insert_issued_license_stmt->bind_param("ss", $issued_license_id, $student_license_id);
+    $insert_issued_license_stmt->execute();
+
     // Fetch license type
     $license_type_query = $conn->query("SELECT license_type FROM licenses WHERE license_id = '$license_id'");
     $license_type_row = $license_type_query->fetch_assoc();

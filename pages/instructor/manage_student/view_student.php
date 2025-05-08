@@ -59,7 +59,7 @@ $student_result = $student_stmt->get_result();
 $student = $student_result->fetch_assoc();
 
 // Get student's licenses
-$licenses_sql = "SELECT sl.student_license_id, sl.progress, 
+$licenses_sql = "SELECT sl.student_license_id, 
                 l.license_id, l.license_name, l.license_type, l.description,
                 les.lesson_name, les.lesson_id
                 FROM student_licenses sl
@@ -100,15 +100,15 @@ foreach ($licenses as $license) {
 
     // Get tests
     $tests_sql = "SELECT st.student_test_id, st.status, st.schedule_status, st.score, st.comment,
-                 t.test_id, t.test_name,
-                 sts.student_test_session_id, sts.attendance_status,
-                 ts.test_date, ts.start_time, ts.end_time, ts.status as session_status
-                 FROM student_tests st
-                 JOIN tests t ON st.test_id = t.test_id
-                 LEFT JOIN student_test_sessions sts ON st.student_test_id = sts.student_test_id
-                 LEFT JOIN test_sessions ts ON sts.test_session_id = ts.test_session_id
-                 WHERE st.student_license_id = ?
-                 ORDER BY t.test_id";
+                    t.test_id, t.test_name,
+                    sts.student_test_session_id, sts.attendance_status,
+                    ts.test_date, ts.start_time, ts.end_time, ts.status as session_status
+                    FROM student_tests st
+                    JOIN tests t ON st.test_id = t.test_id
+                    LEFT JOIN student_test_sessions sts ON st.student_test_id = sts.student_test_id
+                    LEFT JOIN test_sessions ts ON sts.test_session_id = ts.test_session_id
+                    WHERE st.student_license_id = ?
+                    ORDER BY ts.test_date IS NULL, ts.test_date ASC, ts.start_time ASC";
     $tests_stmt = $conn->prepare($tests_sql);
     $tests_stmt->bind_param("s", $student_license_id);
     $tests_stmt->execute();
@@ -214,6 +214,13 @@ foreach ($licenses as $license) {
                                             <div>
                                                 <h4 class="mb-0"><?php echo htmlspecialchars($student['name']); ?></h4>
                                                 <span class="text-muted">Student ID: <?php echo htmlspecialchars($student['student_id']); ?></span>
+                                                <div class="mt-2">
+                                                    <?php if (!empty($student['phone'])): ?>
+                                                        <a class="btn btn-primary btn-sm" href="tel:<?php echo htmlspecialchars($student['phone']); ?>">
+                                                            <i class="fa fa-phone"></i> Call
+                                                        </a>
+                                                    <?php endif; ?>
+                                                </div>
                                             </div>
                                         </div>
 

@@ -9,9 +9,86 @@ function fetchTestTypes($conn)
     return mysqli_query($conn, $query);
 }
 
+// New function to check for scheduling conflicts
+function checkSchedulingConflicts($conn, $instructor_id, $test_date, $start_time, $end_time, $current_test_id)
+{
+    // Check for conflicts with other test sessions
+    $test_conflict_sql = "
+        SELECT ts.test_session_id, ts.test_date, ts.start_time, ts.end_time, t.test_name, t.test_id
+        FROM test_sessions ts
+        JOIN tests t ON ts.test_id = t.test_id
+        WHERE ts.instructor_id = ? 
+        AND ts.test_date = ?
+        AND (
+            (ts.start_time <= ? AND ts.end_time > ?) OR
+            (ts.start_time < ? AND ts.end_time >= ?) OR
+            (ts.start_time >= ? AND ts.end_time <= ?)
+        )
+    ";
+
+    $test_stmt = $conn->prepare($test_conflict_sql);
+    $test_stmt->bind_param("ssssssss", $instructor_id, $test_date, $end_time, $start_time, $end_time, $start_time, $start_time, $end_time);
+    $test_stmt->execute();
+    $test_result = $test_stmt->get_result();
+
+    // Check for conflicts with lessons
+    $lesson_conflict_sql = "
+        SELECT sl.student_lesson_id, sl.date, sl.start_time, sl.end_time, sl.student_lesson_name
+        FROM student_lessons sl
+        WHERE sl.instructor_id = ? 
+        AND sl.date = ?
+        AND (
+            (sl.start_time <= ? AND sl.end_time > ?) OR
+            (sl.start_time < ? AND sl.end_time >= ?) OR
+            (sl.start_time >= ? AND sl.end_time <= ?)
+        )
+    ";
+
+    $lesson_stmt = $conn->prepare($lesson_conflict_sql);
+    $lesson_stmt->bind_param("ssssssss", $instructor_id, $test_date, $end_time, $start_time, $end_time, $start_time, $start_time, $end_time);
+    $lesson_stmt->execute();
+    $lesson_result = $lesson_stmt->get_result();
+
+    $conflicts = [];
+
+    // Process test session conflicts, excluding TES03-TES04 conflicts
+    while ($row = $test_result->fetch_assoc()) {
+        // Special case: If current test is TES03 or TES04 and the conflicting test is the other one,
+        // we allow this specific overlap
+        if (
+            ($current_test_id === 'TES03' && $row['test_id'] === 'TES04') ||
+            ($current_test_id === 'TES04' && $row['test_id'] === 'TES03')
+        ) {
+            continue; // Skip this conflict - allow TES03 and TES04 to be scheduled together
+        }
+
+        $conflicts[] = [
+            'type' => 'Test Session',
+            'name' => $row['test_name'],
+            'date' => $row['test_date'],
+            'start_time' => $row['start_time'],
+            'end_time' => $row['end_time']
+        ];
+    }
+
+    // Process lesson conflicts (no exceptions for lessons)
+    while ($row = $lesson_result->fetch_assoc()) {
+        $conflicts[] = [
+            'type' => 'Lesson',
+            'name' => $row['student_lesson_name'],
+            'date' => $row['date'],
+            'start_time' => $row['start_time'],
+            'end_time' => $row['end_time']
+        ];
+    }
+
+    return $conflicts;
+}
+
 $testTypesResult = fetchTestTypes($conn);
 
 $errors = [];
+$conflicts = [];
 $successMessage = "";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -25,76 +102,86 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     date_default_timezone_set('Asia/Kuala_Lumpur');
     $date_format = date("dmy");
 
-    try {
-        // Generate new test_session_id
-        $session_count_query = $conn->query("SELECT MAX(CAST(SUBSTRING(test_session_id, 5, 3) AS UNSIGNED)) AS max_id FROM test_sessions");
-        $session_count_row = $session_count_query->fetch_assoc();
-        $session_count = $session_count_row['max_id'] ? $session_count_row['max_id'] + 1 : 1;
-        $test_session_id = sprintf('TSES%03d%s', $session_count, $date_format);
+    // Check for scheduling conflicts
+    $conflicts = checkSchedulingConflicts($conn, $instructor_id, $test_date, $start_time, $end_time, $test_id);
+    
+    if (!empty($conflicts)) {
+        // We have conflicts - don't proceed with saving
+        $errors[] = "Scheduling conflict detected. The instructor is already assigned to another event at this time.";
+    } else {
+        try {
+            // Generate new test_session_id
+            $session_count_query = $conn->query("SELECT MAX(CAST(SUBSTRING(test_session_id, 5, 3) AS UNSIGNED)) AS max_id FROM test_sessions");
+            $session_count_row = $session_count_query->fetch_assoc();
+            $session_count = $session_count_row['max_id'] ? $session_count_row['max_id'] + 1 : 1;
+            $test_session_id = sprintf('TSES%03d%s', $session_count, $date_format);
 
-        // Insert test session
-        $insert_session_sql = "INSERT INTO test_sessions (test_session_id, test_id, instructor_id, test_date, start_time, end_time, capacity_students, status) 
+            // Insert test session
+            $insert_session_sql = "INSERT INTO test_sessions (test_session_id, test_id, instructor_id, test_date, start_time, end_time, capacity_students, status) 
                                VALUES (?, ?, ?, ?, ?, ?, ?, 'Scheduled')";
-        $insert_session_stmt = $conn->prepare($insert_session_sql);
-        $insert_session_stmt->bind_param("ssssssi", $test_session_id, $test_id, $instructor_id, $test_date, $start_time, $end_time, $capacity);
-        if (!$insert_session_stmt->execute()) {
-            throw new Exception("Failed to insert test session. Error: " . $insert_session_stmt->error);
-        }
-
-        // Process eligible students 
-        foreach ($eligible_students as $student_test_id) {
-            // Update schedule_status to 'Assigned'
-            $update_student_test_sql = "UPDATE student_tests SET schedule_status = 'Assigned' WHERE student_test_id = ?";
-            $update_student_test_stmt = $conn->prepare($update_student_test_sql);
-            $update_student_test_stmt->bind_param("s", $student_test_id);
-            if (!$update_student_test_stmt->execute()) {
-                throw new Exception("Failed to update student_test_id: $student_test_id. Error: " . $update_student_test_stmt->error);
+            $insert_session_stmt = $conn->prepare($insert_session_sql);
+            $insert_session_stmt->bind_param("ssssssi", $test_session_id, $test_id, $instructor_id, $test_date, $start_time, $end_time, $capacity);
+            if (!$insert_session_stmt->execute()) {
+                throw new Exception("Failed to insert test session. Error: " . $insert_session_stmt->error);
             }
 
-            // Get numeric student_id (nnn part)
-            $student_id_result = $conn->query("
-            SELECT s.student_id FROM students s
-            JOIN student_licenses sl ON sl.student_id = s.student_id
-            JOIN student_tests st ON st.student_license_id = sl.student_license_id
-            WHERE st.student_test_id = '$student_test_id' LIMIT 1
-        ");
-            $student_id_row = $student_id_result->fetch_assoc();
-            $student_id_numeric = substr($student_id_row['student_id'], -3); // → "002"
+            // Process eligible students 
+            foreach ($eligible_students as $student_test_id) {
+                // Update schedule_status to 'Assigned'
+                $update_student_test_sql = "UPDATE student_tests SET schedule_status = 'Assigned' WHERE student_test_id = ?";
+                $update_student_test_stmt = $conn->prepare($update_student_test_sql);
+                $update_student_test_stmt->bind_param("s", $student_test_id);
+                if (!$update_student_test_stmt->execute()) {
+                    throw new Exception("Failed to update student_test_id: $student_test_id. Error: " . $update_student_test_stmt->error);
+                }
 
-            // Get increment for student_test_sessions (xxx part)
-            $session_increment_result = $conn->query("
-            SELECT MAX(CAST(SUBSTRING(student_test_session_id, 6, 3) AS UNSIGNED)) AS max_id 
-            FROM student_test_sessions
-        ");
-            $session_increment_row = $session_increment_result->fetch_assoc();
-            $session_increment = $session_increment_row['max_id'] ? $session_increment_row['max_id'] + 1 : 1;
+                // Get numeric student_id (nnn part)
+                $student_id_result = $conn->query("
+                SELECT s.student_id FROM students s
+                JOIN student_licenses sl ON sl.student_id = s.student_id
+                JOIN student_tests st ON st.student_license_id = sl.student_license_id
+                WHERE st.student_test_id = '$student_test_id' LIMIT 1
+            ");
+                $student_id_row = $student_id_result->fetch_assoc();
+                $student_id_numeric = substr($student_id_row['student_id'], -3); // → "002"
 
-            // Build student_test_session_id
-            $student_test_session_id = sprintf(
-                'STSES%03d%03d%03d',
-                (int)$session_increment,
-                (int)$student_id_numeric,
-                (int)$session_count
-            );
+                // Get increment for student_test_sessions (xxx part)
+                $session_increment_result = $conn->query("
+                SELECT MAX(CAST(SUBSTRING(student_test_session_id, 6, 3) AS UNSIGNED)) AS max_id 
+                FROM student_test_sessions
+            ");
+                $session_increment_row = $session_increment_result->fetch_assoc();
+                $session_increment = $session_increment_row['max_id'] ? $session_increment_row['max_id'] + 1 : 1;
 
-            // Insert into student_test_sessions
-            $insert_student_session_sql = "INSERT INTO student_test_sessions (student_test_session_id, student_test_id, test_session_id) 
+                // Build student_test_session_id
+                $student_test_session_id = sprintf(
+                    'STSES%03d%03d%03d',
+                    (int)$session_increment,
+                    (int)$student_id_numeric,
+                    (int)$session_count
+                );
+
+                // Insert into student_test_sessions
+                $insert_student_session_sql = "INSERT INTO student_test_sessions (student_test_session_id, student_test_id, test_session_id) 
                                        VALUES (?, ?, ?)";
-            $insert_student_session_stmt = $conn->prepare($insert_student_session_sql);
-            $insert_student_session_stmt->bind_param("sss", $student_test_session_id, $student_test_id, $test_session_id);
-            if (!$insert_student_session_stmt->execute()) {
-                throw new Exception("Failed to insert student_test_session_id: $student_test_session_id. Error: " . $insert_student_session_stmt->error);
+                $insert_student_session_stmt = $conn->prepare($insert_student_session_sql);
+                $insert_student_session_stmt->bind_param("sss", $student_test_session_id, $student_test_id, $test_session_id);
+                if (!$insert_student_session_stmt->execute()) {
+                    throw new Exception("Failed to insert student_test_session_id: $student_test_session_id. Error: " . $insert_student_session_stmt->error);
+                }
             }
-        }
 
-        $successMessage = "Test session and student assignments added successfully.";
-    } catch (Exception $e) {
-        $errors[] = $e->getMessage();
+            $successMessage = "Test session and student assignments added successfully.";
+        } catch (Exception $e) {
+            $errors[] = $e->getMessage();
+        }
     }
 }
 
 ob_end_flush();
 ?>
+
+<!-- Rest of the HTML remains the same -->
 
 <div class="container">
     <div class="page-inner">
